@@ -1,7 +1,7 @@
-import { createContext, useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { initialSignInFormData, initialSignUpFormData } from "@/config";
-import { registerService, loginService, checkAuthService } from "@/services";
-
+import { checkAuthService, loginService, registerService } from "@/services";
+import { createContext, useEffect, useState } from "react";
 
 export const AuthContext = createContext(null);
 
@@ -17,7 +17,6 @@ export default function AuthProvider({ children }) {
   async function handleRegisterUser(event) {
     event.preventDefault();
     const data = await registerService(signUpFormData);
-    // Handle the response data if needed
   }
 
   async function handleLoginUser(event) {
@@ -42,37 +41,48 @@ export default function AuthProvider({ children }) {
     }
   }
 
+  //check auth user
+
   async function checkAuthUser() {
     try {
       const data = await checkAuthService();
-      console.log(data, "checkAuthService response");
       if (data.success) {
         setAuth({
           authenticate: true,
           user: data.data.user,
         });
+        setLoading(false);
       } else {
         setAuth({
           authenticate: false,
           user: null,
         });
+        setLoading(false);
       }
     } catch (error) {
-      console.log(error, "checkAuthUser error");
-      setAuth({
-        authenticate: false,
-        user: null,
-      });
-    } finally {
-      setLoading(false);
+      console.log(error);
+      if (!error?.response?.data?.success) {
+        setAuth({
+          authenticate: false,
+          user: null,
+        });
+        setLoading(false);
+      }
     }
+  }
+
+  function resetCredentials() {
+    setAuth({
+      authenticate: false,
+      user: null,
+    });
   }
 
   useEffect(() => {
     checkAuthUser();
   }, []);
 
-  console.log(auth, "auth state");
+  console.log(auth, "gf");
 
   return (
     <AuthContext.Provider
@@ -84,9 +94,10 @@ export default function AuthProvider({ children }) {
         handleRegisterUser,
         handleLoginUser,
         auth,
+       resetCredentials,
       }}
     >
-      {children}
+      {loading ? <Skeleton /> : children}
     </AuthContext.Provider>
   );
 }
