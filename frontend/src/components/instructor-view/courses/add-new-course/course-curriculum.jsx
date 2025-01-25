@@ -6,12 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { mediaUploadService } from "@/services";
 
 
 
 function CourseCurriculum(){
 
-    const { courseCurriculumFormData, setCourseCurriculumFormData } = useContext(InstructorContext);
+    const { courseCurriculumFormData, setCourseCurriculumFormData, mediaUploadProgress,
+        setMediaUploadProgress, } = useContext(InstructorContext);
+
+
     // Adding new lecture
     function handleNewLecture() {
         setCourseCurriculumFormData([
@@ -21,6 +25,65 @@ function CourseCurriculum(){
             },
         ]);
     }
+
+    // Handling course title change
+    function handleCourseTitleChange(event, currentIndex) {
+        let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
+        cpyCourseCurriculumFormData[currentIndex] = {
+          ...cpyCourseCurriculumFormData[currentIndex],
+          title: event.target.value,
+        };
+        setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+    }
+
+    // Handling free preview change
+    function handleFreePreviewChange(currentValue, currentIndex) {
+        let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
+        cpyCourseCurriculumFormData[currentIndex] = {
+         ...cpyCourseCurriculumFormData[currentIndex],
+         freePreview: currentValue,
+        };
+        setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+
+    }
+
+    // Handling single lecture upload
+    async function handleSingleLectureUpload(event, currentIndex) {
+    console.log(event.target.files);
+    const selectedFile = event.target.files[0];
+
+        if (selectedFile) {
+        const videoFormData = new FormData();
+        videoFormData.append("file", selectedFile);
+
+            try {
+                setMediaUploadProgress(true);
+                const response = await mediaUploadService(videoFormData);
+                
+                if (response.success) {
+                    let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
+                    cpyCourseCurriculumFormData[currentIndex] = {
+                        ...cpyCourseCurriculumFormData[currentIndex],
+                        videoUrl: response?.data?.url,
+                        public_id: response?.data?.public_id,
+                    };
+                    setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+                    setMediaUploadProgress(false);
+
+                }
+
+
+
+
+            } catch (error) {
+                console.log(error);
+                
+            }
+        }
+    }
+
+
+
     console.log(courseCurriculumFormData);
 
     return (
@@ -42,10 +105,15 @@ function CourseCurriculum(){
                         name={`title-${index + 1}`}
                         placeholder="Enter lecture title"
                         className="max-w-96"
+                        onChange={(event) => handleCourseTitleChange(event, index)}
+                        value={courseCurriculumFormData[index]?.title}   
                         />
                         <div className="flex items-center space-x-2">
-                            <Switch 
-                             checked= {true}
+                            <Switch
+                             onCheckedChange={(value) =>
+                                handleFreePreviewChange(value, index)
+                             } 
+                             checked= {courseCurriculumFormData[index]?.freePreview}
                              id={`freePreview-${index + 1}`}                           
                             />
                             <Label htmlFor={`freePreview-${index + 1}`}>
@@ -55,10 +123,13 @@ function CourseCurriculum(){
                        </div>
                        <div className="mt-6">
                         <Input
-                    type="file"
-                    accept="video/*"
-                    className="mb-4"
-                  />
+                         type="file"
+                         accept="video/*"
+                         onChange={(event) =>
+                            handleSingleLectureUpload(event, index)
+                         }
+                         className="mb-4"
+                        />
                        </div>
                      </div>   
                     ))

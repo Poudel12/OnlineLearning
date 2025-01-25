@@ -8,7 +8,7 @@ import { courseLandingPageFormControls } from "@/config";
 
 function CourseLanding(){
 
-    const { courseLandingFormData, setCourseLandingFormData } = useContext(InstructorContext);
+  const { courseLandingFormData, setCourseLandingFormData } = useContext(InstructorContext);
 
     
     return (
