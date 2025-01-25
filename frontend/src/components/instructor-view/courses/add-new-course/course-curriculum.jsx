@@ -7,13 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { mediaUploadService } from "@/services";
+import MediaProgressbar from "@/components/media-progress-bar";
 
 
 
 function CourseCurriculum(){
 
-    const { courseCurriculumFormData, setCourseCurriculumFormData, mediaUploadProgress,
-        setMediaUploadProgress, } = useContext(InstructorContext);
+    const { 
+        courseCurriculumFormData,
+        setCourseCurriculumFormData,
+        mediaUploadProgress,
+        setMediaUploadProgress,
+        mediaUploadProgressPercentage,
+        setMediaUploadProgressPercentage 
+    } = useContext(InstructorContext);
 
 
     // Adding new lecture
@@ -58,7 +65,7 @@ function CourseCurriculum(){
 
             try {
                 setMediaUploadProgress(true);
-                const response = await mediaUploadService(videoFormData);
+                const response = await mediaUploadService(videoFormData, setMediaUploadProgressPercentage);
                 
                 if (response.success) {
                     let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
@@ -95,6 +102,12 @@ function CourseCurriculum(){
                 <Button onClick={handleNewLecture}>
                    Add Lecture 
                 </Button>
+                {mediaUploadProgress ? (
+                    <MediaProgressbar
+                        isMediaUploading={mediaUploadProgress}
+                        progress={mediaUploadProgressPercentage}
+                    />
+                ) : null}
                 <div className="mt-4 space-y-4">
                     {
                      courseCurriculumFormData.map((curriculumItem, index) => (
