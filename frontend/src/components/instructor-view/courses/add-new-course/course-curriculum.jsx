@@ -8,6 +8,7 @@ import VideoPlayer from "@/components/video-player";
 import { courseCurriculumInitialFormData } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
 import {
+    mediaDeleteService,
   mediaUploadService,
 } from "@/services";
 
@@ -93,17 +94,39 @@ function CourseCurriculum(){
         }
     }
 
-    // validation foor add lecture
-//     function isCourseCurriculumFormDataValid() {
-//         return courseCurriculumFormData.every((item) => {
-//           return (
-//             item &&
-//             typeof item === "object" &&
-//             item.title.trim() !== "" &&
-//             item.videoUrl.trim() !== ""
-//          );
-//         });
-//  } 
+    // replacing lecture video
+    async function handleReplaceVideo(currentIndex) {
+        let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
+        const getCurrentVideoPublicId =
+         cpyCourseCurriculumFormData[currentIndex].public_id;
+
+        const deleteCurrentMediaResponse = await mediaDeleteService(getCurrentVideoPublicId);
+        
+        console.log(deleteCurrentMediaResponse, "deleteCurrentMediaResponse")
+
+        if (deleteCurrentMediaResponse?.success) {
+            cpyCourseCurriculumFormData[currentIndex] = {
+                ...cpyCourseCurriculumFormData[currentIndex],
+                videoUrl: "",
+                public_id: "",
+            };
+
+            setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+        }
+
+    }
+
+    // validation for add lecture
+    function isCourseCurriculumFormDataValid() {
+        return courseCurriculumFormData.every((item) => {
+          return (
+            item &&
+            typeof item === "object" &&
+            item.title.trim() !== "" &&
+            item.videoUrl.trim() !== ""
+         );
+        });
+ } 
 
 
 
@@ -115,7 +138,9 @@ function CourseCurriculum(){
                 <CardTitle>Create Course Curriculum</CardTitle>
             </CardHeader>
             <CardContent>
-                <Button onClick={handleNewLecture}>
+                <Button 
+                disabled={!isCourseCurriculumFormDataValid() || mediaUploadProgress}
+                onClick={handleNewLecture}>
                    Add Lecture 
                 </Button>
                 {mediaUploadProgress ? (
@@ -160,7 +185,9 @@ function CourseCurriculum(){
                             height="200px"
                             
                             />
-                            <Button>Replace Lecture</Button>
+                            <Button onClick={() => handleReplaceVideo(index)}>
+                                Replace Lecture
+                            </Button>
                             <Button className="bg-red-900">Delete Lecture</Button>
 
                           </div> : 
