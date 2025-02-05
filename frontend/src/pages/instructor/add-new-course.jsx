@@ -7,8 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { courseCurriculumInitialFormData, courseLandingInitialFormData } from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { InstructorContext } from "@/context/instructor-context";
-import { addNewCourseService } from "@/services";
-import { useContext } from "react";
+import { addNewCourseService, fetchInstructorCourseDetailsService, updateCourseByIdService } from "@/services";
+import { useContext, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 
@@ -20,11 +20,15 @@ function AddNewCoursePage() {
     courseCurriculumFormData,
     setCourseLandingFormData,
     setCourseCurriculumFormData,
+    currentEditedCourseId,
+    setCurrentEditedCourseId,
   } = useContext(InstructorContext);
 
   const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const params = useParams();
+
+  console.log(params);
 
 
   function isEmpty(value) {
@@ -71,18 +75,58 @@ function AddNewCoursePage() {
       curriculum: courseCurriculumFormData,
       isPublised: true,
     };
-    const response = await addNewCourseService(courseFinalFormData);
+    const response =
+     currentEditedCourseId !== null
+     ? await updateCourseByIdService(
+        currentEditedCourseId,
+        courseFinalFormData
+       )
+    
+    : await addNewCourseService(courseFinalFormData);
 
         if (response?.success) {
           setCourseLandingFormData(courseLandingInitialFormData);
           setCourseCurriculumFormData(courseCurriculumInitialFormData);
           navigate(-1);
+          setCurrentEditedCourseId(null);
         }
 
 
     console.log(courseFinalFormData,"courseFinalFormData")
 
   }
+  // fetching course details to edit course
+  async function fetchCurrentCourseDetails() {
+    const response = await fetchInstructorCourseDetailsService(
+      currentEditedCourseId
+    );
+
+    if (response?.success) {
+      const setCourseFormData = Object.keys(
+        courseLandingInitialFormData
+      ).reduce((acc, key) => {
+        acc[key] = response?.data[key] || courseLandingInitialFormData[key];
+
+        return acc;
+      }, {});
+
+      console.log(setCourseFormData, response?.data, "setCourseFormData");
+      setCourseLandingFormData(setCourseFormData);
+      setCourseCurriculumFormData(response?.data?.curriculum);
+    }
+
+    console.log(response, "response");
+  }
+
+  useEffect(() => {
+    if (currentEditedCourseId !== null) fetchCurrentCourseDetails();
+  }, [currentEditedCourseId]);
+
+  useEffect(() => {
+    if (params?.courseId) setCurrentEditedCourseId(params?.courseId);
+  }, [params?.courseId]);
+
+  console.log(params, currentEditedCourseId, "params");
 
 
 
