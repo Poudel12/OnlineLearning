@@ -8,6 +8,7 @@ import StudentViewCommonLayout from './components/student-view/common-layout.jsx
 import StudentHomePage from "./pages/student/home";
 import NotFoundPage from './pages/not-found/index.jsx';
 import AddNewCoursePage from './pages/instructor/add-new-course.jsx';
+import StudentViewCoursesPage from './pages/student/courses/index.jsx';
 
 function App() {
 
@@ -67,6 +68,7 @@ function App() {
       >
         <Route path="" element={<StudentHomePage />} />
         <Route path="home" element={<StudentHomePage />} />
+        <Route path="courses" element={<StudentViewCoursesPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
