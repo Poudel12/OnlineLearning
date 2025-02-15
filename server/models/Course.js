@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 
 const LectureSchema = new mongoose.Schema({
@@ -34,4 +33,7 @@ const CourseSchema = new mongoose.Schema({
   isPublised: Boolean,
 });
 
-module.exports = mongoose.model("Course", CourseSchema);
+// Check if the model is already defined to avoid overwriting
+const Course = mongoose.models.Course || mongoose.model("Course", CourseSchema);
+
+module.exports = Course;
