@@ -14,11 +14,33 @@ import { StudentContext } from "@/context/student-contex";
 import { fetchStudentViewCourseListService } from "@/services";
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
+
+function createSearchParamsHelper(filterParams) {
+  const queryParams = [];
+
+  for (const [key, value] of Object.entries(filterParams)) {
+    if (Array.isArray(value) && value.length > 0) {
+      const paramValue = value.join(",");
+
+      queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
+    }
+  }
+
+  return queryParams.join("&");
+}
+
+
+
+
 
 function StudentViewCoursesPage() {
 
   const [sort, setSort] = useState("price-lowtohigh");
   const [filters, setFilters] = useState({});
+
+   const [searchParams, setSearchParams] = useSearchParams();
 
   const { studentViewCoursesList, setStudentViewCoursesList } =
     useContext(StudentContext);
@@ -55,14 +77,40 @@ function StudentViewCoursesPage() {
     }
 
 
-  async function fetchAllStudentViewCourses() {
-    const response = await fetchStudentViewCourseListService();
-    console.log(response, "courselist_in_explore");
-    if (response?.success) setStudentViewCoursesList(response?.data);
-  }
+  async function fetchAllStudentViewCourses(filters, sort) {
+        const query = new URLSearchParams({
+            ...filters,
+            sortBy: sort,
+        });
+        const response = await fetchStudentViewCourseListService(query);
+        if (response?.success) {
+            setStudentViewCoursesList(response?.data);
+            
+        }
+    }
 
-  useEffect(() => {
-    fetchAllStudentViewCourses();
+// search params
+   useEffect(() => {
+    const buildQueryStringForFilters = createSearchParamsHelper(filters);
+    setSearchParams(new URLSearchParams(buildQueryStringForFilters));
+  }, [filters]);
+
+
+   useEffect(() => {
+    setSort("price-lowtohigh");
+    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
+  }, []);
+
+    useEffect(() => {
+    if (filters !== null && sort !== null)
+      fetchAllStudentViewCourses(filters, sort);
+    }, [filters, sort]);
+
+    // clear filter while changing page
+    useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("filters");
+    };
   }, []);
 
   console.log(filters,"filters");
@@ -166,7 +214,7 @@ function StudentViewCoursesPage() {
                 </Card>
               ))
             ) : (
-              <h1>No Courses Found</h1>
+              <h1 className="font-extrabold text-4xl">No Courses Found</h1>
             )}
           </div>
         </main>
