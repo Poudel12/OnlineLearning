@@ -11,6 +11,7 @@ import AddNewCoursePage from './pages/instructor/add-new-course.jsx';
 import StudentViewCoursesPage from './pages/student/courses/index.jsx';
 import liveClass from './pages/instructor/liveclass.jsx';
 import LiveClassPage from './pages/instructor/liveclass.jsx';
+import StudentViewCourseDetailsPage from './pages/student/course-details/index.jsx';
 
 function App() {
 
@@ -81,6 +82,8 @@ function App() {
         <Route path="" element={<StudentHomePage />} />
         <Route path="home" element={<StudentHomePage />} />
         <Route path="courses" element={<StudentViewCoursesPage />} />
+        <Route path="course/details/:id" element={<StudentViewCourseDetailsPage />} />
+
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

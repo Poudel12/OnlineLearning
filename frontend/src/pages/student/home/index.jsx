@@ -3,11 +3,11 @@ import { useContext, useEffect } from "react";
 import { courseCategories } from "@/config";
 import { StudentContext } from "@/context/student-contex";
 import { fetchStudentViewCourseListService } from "@/services";
+import { useNavigate } from "react-router-dom";
 
 function StudentHomePage() {
-  const { studentViewCoursesList, setStudentViewCoursesList } =
-    useContext(StudentContext);
-  
+  const { studentViewCoursesList, setStudentViewCoursesList } = useContext(StudentContext);
+  const navigate = useNavigate();
 
   async function fetchAllStudentViewCourses() {
     const response = await fetchStudentViewCourseListService();
@@ -57,6 +57,7 @@ function StudentHomePage() {
           {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
             studentViewCoursesList.map((courseItem) => (
               <div
+                onClick={() => navigate(`/course/details/${courseItem?._id}`)}
                 className="border rounded-lg overflow-hidden shadow cursor-pointer"
                 key={courseItem.id}
               >
