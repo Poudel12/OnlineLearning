@@ -9,13 +9,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { filterOptions, sortOptions } from "@/config";
 import { StudentContext } from "@/context/student-contex";
 import { fetchStudentViewCourseListService } from "@/services";
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-
 
 function createSearchParamsHelper(filterParams) {
   const queryParams = [];
@@ -31,89 +31,64 @@ function createSearchParamsHelper(filterParams) {
   return queryParams.join("&");
 }
 
-
-
-
-
 function StudentViewCoursesPage() {
-
   const [sort, setSort] = useState("price-lowtohigh");
   const [filters, setFilters] = useState({});
-
-   const [searchParams, setSearchParams] = useSearchParams();
-
-  const { studentViewCoursesList, setStudentViewCoursesList } =
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { studentViewCoursesList, setStudentViewCoursesList, loadingState, setLoadingState } =
     useContext(StudentContext);
 
+  function handleFilterOnChange(getSectionId, getCurrentOption) {
+    let cpyFilters = { ...filters };
+    const indexOfCurrentSeection = Object.keys(cpyFilters).indexOf(getSectionId);
 
-    //filters 
-    function handleFilterOnChange(getSectionId, getCurrentOption) { 
-        let cpyFilters = { ...filters };
-        const indexOfCurrentSeection =
-        Object.keys(cpyFilters).indexOf(getSectionId);
+    if (indexOfCurrentSeection === -1) {
+      cpyFilters = {
+        ...cpyFilters,
+        [getSectionId]: [getCurrentOption.id],
+      };
+    } else {
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption.id);
 
-        console.log(indexOfCurrentSeection,getSectionId,"current section");
-
-        if (indexOfCurrentSeection === -1) {
-          cpyFilters = {
-            ...cpyFilters,
-            [getSectionId]: [getCurrentOption.id],
-        };
-
-            console.log(cpyFilters);
-        } else {
-            const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
-             getCurrentOption.id
-            ); 
-            
-            if (indexOfCurrentOption === -1)
-                cpyFilters[getSectionId].push(getCurrentOption.id);
-            else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
-        }   
-
-        setFilters(cpyFilters);
-        sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
-
+      if (indexOfCurrentOption === -1) cpyFilters[getSectionId].push(getCurrentOption.id);
+      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
     }
 
+    setFilters(cpyFilters);
+    sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
+  }
 
   async function fetchAllStudentViewCourses(filters, sort) {
-        const query = new URLSearchParams({
-            ...filters,
-            sortBy: sort,
-        });
-        const response = await fetchStudentViewCourseListService(query);
-        if (response?.success) {
-            setStudentViewCoursesList(response?.data);
-            
-        }
+    const query = new URLSearchParams({
+      ...filters,
+      sortBy: sort,
+    });
+    const response = await fetchStudentViewCourseListService(query);
+    if (response?.success) {
+      setStudentViewCoursesList(response?.data);
+      setLoadingState(false);
     }
+  }
 
-// search params
-   useEffect(() => {
+  useEffect(() => {
     const buildQueryStringForFilters = createSearchParamsHelper(filters);
     setSearchParams(new URLSearchParams(buildQueryStringForFilters));
   }, [filters]);
 
-
-   useEffect(() => {
+  useEffect(() => {
     setSort("price-lowtohigh");
     setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
   }, []);
 
-    useEffect(() => {
-    if (filters !== null && sort !== null)
-      fetchAllStudentViewCourses(filters, sort);
-    }, [filters, sort]);
+  useEffect(() => {
+    if (filters !== null && sort !== null) fetchAllStudentViewCourses(filters, sort);
+  }, [filters, sort]);
 
-    // clear filter while changing page
-    useEffect(() => {
+  useEffect(() => {
     return () => {
       sessionStorage.removeItem("filters");
     };
   }, []);
-
-  console.log(filters,"filters");
 
   return (
     <div className="container mx-auto p-4">
@@ -134,9 +109,7 @@ function StudentViewCoursesPage() {
                           filters[keyItem] &&
                           filters[keyItem].indexOf(option.id) > -1
                         }
-                        onCheckedChange={() =>
-                          handleFilterOnChange(keyItem, option)
-                        }
+                        onCheckedChange={() => handleFilterOnChange(keyItem, option)}
                       />
                       {option.label}
                     </Label>
@@ -150,11 +123,7 @@ function StudentViewCoursesPage() {
           <div className="flex justify-end items-center mb-4 gap-5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 p-5"
-                >
+                <Button variant="outline" size="sm" className="flex items-center gap-2 p-5">
                   <ArrowUpDownIcon className="h-4 w-4" />
                   <span className="text-[16px] font-medium">Sort By</span>
                 </Button>
@@ -162,10 +131,7 @@ function StudentViewCoursesPage() {
               <DropdownMenuContent align="end" className="w-[180px]">
                 <DropdownMenuRadioGroup value={sort} onValueChange={(value) => setSort(value)}>
                   {sortOptions.map((sortItem) => (
-                    <DropdownMenuRadioItem
-                      value={sortItem.id}
-                      key={sortItem.id}
-                    >
+                    <DropdownMenuRadioItem value={sortItem.id} key={sortItem.id}>
                       {sortItem.label}
                     </DropdownMenuRadioItem>
                   ))}
@@ -179,40 +145,34 @@ function StudentViewCoursesPage() {
           <div className="space-y-4">
             {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
               studentViewCoursesList.map((courseItem) => (
-                <Card className= "cursor-pointer" key={courseItem?._id}>
-                  <CardContent className="flex gap-4 p-4">
+                <Card className="cursor-pointer" key={courseItem?._id}>
+                  <CardContent className="flex items-center gap-4 p-4">
+                    {/* Image Container */}
                     <div className="w-48 h-32 flex-shrink-0">
                       <img
                         src={courseItem?.image}
                         className="w-full h-full object-contain p-2 bg-white"
                       />
                     </div>
-                  </CardContent>
-                   <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">
-                        {courseItem?.title}
-                      </CardTitle>
-                      <p className="text-sm text-gray-600 mb-1">
-                        Created By{" "}
-                        <span className="font-bold">
-                          {courseItem?.instructorName}
-                        </span>
-                      </p>
 
-                       <p className="text-[16px] text-gray-600 mt-3 mb-2">
+                    {/* Text Container */}
+                    <div className="flex-1">
+                      <CardTitle className="text-xl mb-2">{courseItem?.title}</CardTitle>
+                      <p className="text-sm text-gray-600 mb-1">
+                        Created By <span className="font-bold">{courseItem?.instructorName}</span>
+                      </p>
+                      <p className="text-[16px] text-gray-600 mt-3 mb-2">
                         {`${courseItem?.curriculum?.length} ${
-                          courseItem?.curriculum?.length <= 1
-                            ? "Lecture"
-                            : "Lectures"
+                          courseItem?.curriculum?.length <= 1 ? "Lecture" : "Lectures"
                         } - ${courseItem?.level.toUpperCase()} Level`}
                       </p>
-                      <p className="font-bold text-lg">
-                        ${courseItem?.pricing}
-                      </p>
-
+                      <p className="font-bold text-lg">${courseItem?.pricing}</p>
                     </div>
+                  </CardContent>
                 </Card>
               ))
+            ) : loadingState ? (
+              <Skeleton />
             ) : (
               <h1 className="font-extrabold text-4xl">No Courses Found</h1>
             )}
