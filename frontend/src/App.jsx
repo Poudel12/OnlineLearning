@@ -9,6 +9,8 @@ import StudentHomePage from "./pages/student/home";
 import NotFoundPage from './pages/not-found/index.jsx';
 import AddNewCoursePage from './pages/instructor/add-new-course.jsx';
 import StudentViewCoursesPage from './pages/student/courses/index.jsx';
+import liveClass from './pages/instructor/liveclass.jsx';
+import LiveClassPage from './pages/instructor/liveclass.jsx';
 
 function App() {
 
@@ -41,6 +43,16 @@ function App() {
         element={
           <RouteGuard
             element={<AddNewCoursePage/>}
+            authenticated={auth?.authenticate}
+            user={auth?.user}
+          />
+        }
+      />
+      <Route
+        path="/instructor/start-live-class"
+        element={
+          <RouteGuard
+            element={<LiveClassPage/>}
             authenticated={auth?.authenticate}
             user={auth?.user}
           />

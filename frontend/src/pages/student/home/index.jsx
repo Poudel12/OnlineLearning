@@ -1,16 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { AuthContext } from "@/context/auth-context";
 import { useContext, useEffect } from "react";
 import { courseCategories } from "@/config";
-import { useNavigate } from "react-router-dom";
 import { StudentContext } from "@/context/student-contex";
 import { fetchStudentViewCourseListService } from "@/services";
 
 function StudentHomePage() {
   const { studentViewCoursesList, setStudentViewCoursesList } =
     useContext(StudentContext);
-  const { auth } = useContext(AuthContext);
-  const navigate = useNavigate();
+  
 
   async function fetchAllStudentViewCourses() {
     const response = await fetchStudentViewCourseListService();

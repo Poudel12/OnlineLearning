@@ -22,6 +22,14 @@ function InstructorCourses({listOfCourses}) {
   return <Card>
     <CardHeader className="flex justify-between flex-row items-center">
       <CardTitle className="text-3xl font-extrabold">All Courses</CardTitle>
+      <div className="flex gap-4">
+      <Button className="p-6"
+      onClick={()=>{ 
+        navigate("/instructor/start-live-class");
+       }}
+      >
+        Start Live class
+      </Button>
       <Button 
       onClick={() => {
         setCurrentEditedCourseId(null);
@@ -34,6 +42,7 @@ function InstructorCourses({listOfCourses}) {
       Create New Course
       
       </Button>
+      </div>
     </CardHeader>
     <CardContent>
       <div className="overflow-x-auto">
