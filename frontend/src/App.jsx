@@ -11,7 +11,7 @@ import AddNewCoursePage from './pages/instructor/add-new-course.jsx';
 import StudentViewCoursesPage from './pages/student/courses/index.jsx';
 import LiveClassPage from './pages/instructor/liveclass.jsx';
 import StudentViewCourseDetailsPage from './pages/student/course-details/index.jsx';
-import Page from './video-meeting/roomId/MeetingPage.jsx';
+import  { VideoMeeting } from './video-meeting/roomId/MeetingPage.jsx';
 
 function App() {
 
@@ -73,7 +73,7 @@ function App() {
         path="/instructor/start-live-class/video-meeting/:roomId"
         element={
           <RouteGuard
-            element={<Page />}
+            element={<VideoMeeting />}
             authenticated={auth?.authenticate}
             user={auth?.user}
           />
