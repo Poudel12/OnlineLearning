@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { GraduationCap } from "lucide-react";
-import MeetingAction from "@/components/liveclass/meetingaction";
-import MeetingFeature from "@/components/liveclass/meetingfeature";
+import MeetingAction from "@/components/liveclass/MeetingAction";
+import MeetingFeature from "@/components/liveclass/MeetingFeature";
 
 function LiveClassPage() {
   return (
