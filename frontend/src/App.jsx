@@ -69,16 +69,16 @@ function App() {
           />
         }
       />
-      <Route
-        path="/instructor/start-live-class/video-meeting/:roomId"
+      {/* <Route
+        path="/class/start-live-class/video-meeting/:roomId"
         element={
           <RouteGuard
             element={<VideoMeeting />}
             authenticated={auth?.authenticate}
-            user={auth?.user}
+            user={auth?.user} 
           />
         }
-      />
+      /> */}
       <Route
         path="/"
         element={
@@ -96,6 +96,8 @@ function App() {
 
       </Route>
       <Route path="*" element={<NotFoundPage />} />
+       {auth.authenticate && <Route path="/class/start-live-class/video-meeting/:roomId" element={<VideoMeeting />}  />}
+
     </Routes>
   );
 }

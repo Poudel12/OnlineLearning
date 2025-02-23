@@ -24,7 +24,7 @@ function MeetingAction() {
 
   const handleCreateMeetingForLater = () => {
     const roomId = uuidv4();
-    const url = `${baseUrl}/instructor/start-live-class/video-meeting/${roomId}`;
+    const url = `${baseUrl}/class/start-live-class/video-meeting/${roomId}`;
     setGeneratedMeetingUrl(url);
     setIsDialogOpen(true);
     toast.success("Meeting link created successfully");
@@ -58,14 +58,14 @@ function MeetingAction() {
 
     toast.info("Joining meeting...");
     setTimeout(() => {
-      navigate(`/instructor/start-live-class/video-meeting/${roomId}`);
+      navigate(`/class/start-live-class/video-meeting/${roomId}`);
     }, 1500);
   };
 
   const handleStartMeeting = () => {
     setIsLoading(true);
     const roomId = uuidv4();
-    const meetingUrl = `/instructor/start-live-class/video-meeting/${roomId}`;
+    const meetingUrl = `/class/start-live-class/video-meeting/${roomId}`;
 
     // Show the toast first
     toast.info('Joining meeting...');
@@ -78,7 +78,7 @@ function MeetingAction() {
 
   // Show toast when the location changes to a meeting page (successful navigation)
   useEffect(() => {
-    if (location.pathname.includes("/instructor/start-live-class/video-meeting/")) {
+    if (location.pathname.includes("/class/start-live-class/video-meeting/")) {
       toast.success("Successfully opened meeting page.");
     }
   }, [location.pathname]);  // Trigger this when the pathname changes

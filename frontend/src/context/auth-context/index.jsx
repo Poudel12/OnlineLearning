@@ -40,7 +40,7 @@ export default function AuthProvider({ children }) {
       });
     }
   }
-
+console.log(auth)
   //check auth user
 
   async function checkAuthUser() {
