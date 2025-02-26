@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { AuthContext } from '@/context/auth-context';
@@ -11,19 +11,19 @@ export const VideoMeeting = () => {
   const params = useParams();
   const roomID = params.roomId;
   const navigation = useNavigate();
-  const containerRef = useRef(null); // ref for video container element
+  const containerRef = useRef(null);
   const [zp, setZp] = useState(null);
   const [isInMeeting, setIsInMeeting] = useState(false);
-  const { auth } = useContext(AuthContext); // Access authentication state
+  const { auth } = useContext(AuthContext);
   const [redirected, setRedirected] = useState(false);
-  const timerRef = useRef(null); // Timer for auto-end meeting
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (auth.authenticate) {
       joinMeeting(containerRef.current);
     } else {
       console.log('Session is not authenticated. Please login before use.');
-      navigation('/login'); // Redirect to login if not authenticated
+      navigation('/auth');
     }
   }, [auth.authenticate, auth.user?.userName, navigation]);
 
@@ -32,7 +32,7 @@ export const VideoMeeting = () => {
       if (zp) {
         zp.destroy();
       }
-      clearTimeout(timerRef.current); // Clear timer on unmount
+      clearTimeout(timerRef.current);
     };
   }, [zp]);
 
@@ -79,17 +79,12 @@ export const VideoMeeting = () => {
         },
         showAudioVideoSettingsButton: true,
         showScreenSharingButton: true,
-        showTurnOffRemoteCameraButton: true,
-        showTurnOffRemoteMicrophoneButton: true,
-        showRemoveUserButton: true,
+        showTurnOffRemoteCameraButton: auth?.user?.role === 'instructor',
+        showTurnOffRemoteMicrophoneButton: auth?.user?.role === 'instructor',
+        showRemoveUserButton: auth?.user?.role === 'instructor',
         onJoinRoom: () => {
           toast.success('Meeting joined successfully');
           setIsInMeeting(true);
-
-          // **Start Auto-End Timer for 60 Minutes**
-          timerRef.current = setTimeout(() => {
-            endMeeting(true);
-          }, 30000); // 60 minutes = 60 * 60 * 1000 ms
         },
         onLeaveRoom: () => {
           endMeeting();
@@ -113,7 +108,7 @@ export const VideoMeeting = () => {
       toast.success('Meeting ended successfully');
     }
 
-    clearTimeout(timerRef.current); 
+    clearTimeout(timerRef.current);
 
     setTimeout(() => {
       if (auth?.user?.role === 'instructor') {
@@ -121,14 +116,13 @@ export const VideoMeeting = () => {
       } else {
         navigation('/home');
       }
-
       setTimeout(() => {
         window.location.reload(); 
-      }, 10); 
-    }, 1000); 
+      }, 10);
+    }, 1000);
   };
 
-  return (
+ return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
