@@ -16,36 +16,32 @@ export const VideoMeeting = () => {
   const [isInMeeting, setIsInMeeting] = useState(false);
   const { auth } = useContext(AuthContext); // Access authentication state
   const [redirected, setRedirected] = useState(false);
+  const timerRef = useRef(null); // Timer for auto-end meeting
 
   useEffect(() => {
-    // Check if the user is authenticated before joining the meeting
     if (auth.authenticate) {
       joinMeeting(containerRef.current);
     } else {
       console.log('Session is not authenticated. Please login before use.');
-      // Redirect to login if not authenticated
-      navigation('/login');
+      navigation('/login'); // Redirect to login if not authenticated
     }
-  }, [auth.authenticate, auth.user?.userName, navigation]); // Run when authentication or user changes
-
- 
+  }, [auth.authenticate, auth.user?.userName, navigation]);
 
   useEffect(() => {
     return () => {
-      // Cleanup: destroy the meeting instance when component is unmounted
       if (zp) {
         zp.destroy();
       }
+      clearTimeout(timerRef.current); // Clear timer on unmount
     };
   }, [zp]);
 
-   useEffect(() => {
+  useEffect(() => {
     if (redirected) {
       setRedirected(false);
     }
   }, [redirected]);
 
-  // ZegoCloud
   const joinMeeting = async (element) => {
     try {
       const appID = Number(NEXT_PUBLIC_ZEGOAPP_ID);
@@ -61,17 +57,15 @@ export const VideoMeeting = () => {
         auth?.user?.userName || 'Guest'
       );
 
-      // Create instance object from Kit Token
       const zegoInstance = ZegoUIKitPrebuilt.create(kitToken);
       setZp(zegoInstance);
 
-      // Start the call
       zegoInstance.joinRoom({
         container: element,
         onDisconnect: () => {
-        toast.error("Disconnected from the meeting. Reconnecting...");
-        setTimeout(() => {
-          window.location.reload(); // Reload to attempt reconnection
+          toast.error("Disconnected from the meeting. Reconnecting...");
+          setTimeout(() => {
+            window.location.reload();
           }, 2000);
         },
         sharedLinks: [
@@ -81,7 +75,7 @@ export const VideoMeeting = () => {
           },
         ],
         scenario: {
-          mode: ZegoUIKitPrebuilt.GroupCall, // To implement 1-on-1 calls, modify the parameter here
+          mode: ZegoUIKitPrebuilt.GroupCall, 
         },
         showAudioVideoSettingsButton: true,
         showScreenSharingButton: true,
@@ -91,6 +85,11 @@ export const VideoMeeting = () => {
         onJoinRoom: () => {
           toast.success('Meeting joined successfully');
           setIsInMeeting(true);
+
+          // **Start Auto-End Timer for 60 Minutes**
+          timerRef.current = setTimeout(() => {
+            endMeeting(true);
+          }, 30000); // 60 minutes = 60 * 60 * 1000 ms
         },
         onLeaveRoom: () => {
           endMeeting();
@@ -102,14 +101,19 @@ export const VideoMeeting = () => {
     }
   };
 
- 
-  const endMeeting = () => {
+  const endMeeting = (autoEnd = false) => {
     if (zp) {
-      zp.destroy(); // Destroy meeting instance if it exists
-      setZp(null);  // Reset state
+      zp.destroy(); 
+      setZp(null);
     }
 
-    toast.success('Meeting ended successfully');
+    if (autoEnd) {
+      toast.warning("The live session ended automatically after 60 minutes.");
+    } else {
+      toast.success('Meeting ended successfully');
+    }
+
+    clearTimeout(timerRef.current); 
 
     setTimeout(() => {
       if (auth?.user?.role === 'instructor') {
@@ -119,12 +123,10 @@ export const VideoMeeting = () => {
       }
 
       setTimeout(() => {
-        window.location.reload(); // Refresh the page after navigation
-      }, 10); // Give some time for navigation before reloading
-    }, 1000); // Delay to allow toast message to show
+        window.location.reload(); 
+      }, 10); 
+    }, 1000); 
   };
-
-
 
   return (
     <>
