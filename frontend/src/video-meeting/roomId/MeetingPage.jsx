@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { AuthContext } from '@/context/auth-context';
 import { toast, ToastContainer } from 'react-toastify';
@@ -15,11 +15,20 @@ export const VideoMeeting = () => {
   const [zp, setZp] = useState(null);
   const [isInMeeting, setIsInMeeting] = useState(false);
   const { auth } = useContext(AuthContext);
-  const [redirected, setRedirected] = useState(false);
+  const [startTime, setStartTime] = useState(null);
   const timerRef = useRef(null);
 
   useEffect(() => {
     if (auth.authenticate) {
+      const urlParams = new URLSearchParams(window.location.search);
+      let meetingStartTime = urlParams.get('startTime');
+      
+      if (!meetingStartTime || meetingStartTime === 'null' || isNaN(Number(meetingStartTime))) {
+        meetingStartTime = Date.now().toString();
+        window.history.replaceState({}, '', `${window.location.pathname}?startTime=${meetingStartTime}`);
+      }
+      
+      setStartTime(meetingStartTime);
       joinMeeting(containerRef.current);
     } else {
       console.log('Session is not authenticated. Please login before use.');
@@ -37,10 +46,19 @@ export const VideoMeeting = () => {
   }, [zp]);
 
   useEffect(() => {
-    if (redirected) {
-      setRedirected(false);
+    if (startTime) {
+      const endTime = Number(startTime) + 1 * 60 * 1000; // 1 hour from the first joiner
+      const remainingTime = endTime - Date.now();
+      
+      if (remainingTime > 0) {
+        timerRef.current = setTimeout(() => {
+          endMeeting(true);
+        }, remainingTime);
+      } else {
+        endMeeting(true);
+      }
     }
-  }, [redirected]);
+  }, [startTime]);
 
   const joinMeeting = async (element) => {
     try {
@@ -71,7 +89,7 @@ export const VideoMeeting = () => {
         sharedLinks: [
           {
             name: 'Join via this link',
-            url: `${window.location.origin}/class/start-live-class/video-meeting/${roomID}`,
+            url: `${window.location.origin}/class/start-live-class/video-meeting/${roomID}?startTime=${startTime}`,
           },
         ],
         scenario: {
@@ -103,7 +121,7 @@ export const VideoMeeting = () => {
     }
 
     if (autoEnd) {
-      toast.warning("The live session ended automatically after 60 minutes.");
+      toast.warning("The live session ended automatically after 1 hour.");
     } else {
       toast.success('Meeting ended successfully');
     }
@@ -117,12 +135,12 @@ export const VideoMeeting = () => {
         navigation('/home');
       }
       setTimeout(() => {
-        window.location.reload(); 
+        window.location.reload();
       }, 10);
     }, 1000);
   };
 
- return (
+  return (
     <>
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900">
