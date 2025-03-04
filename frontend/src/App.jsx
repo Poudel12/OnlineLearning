@@ -12,6 +12,8 @@ import StudentViewCoursesPage from './pages/student/courses/index.jsx';
 import LiveClassPage from './pages/instructor/liveclass.jsx';
 import StudentViewCourseDetailsPage from './pages/student/course-details/index.jsx';
 import  { VideoMeeting } from './video-meeting/roomId/MeetingPage.jsx';
+import PaypalPaymentReturnPage from './pages/student/payment-return/index.jsx';
+import StudentCoursesPage from './pages/student/student-courses/index.jsx';
 
 function App() {
 
@@ -93,6 +95,8 @@ function App() {
         <Route path="home" element={<StudentHomePage />} />
         <Route path="courses" element={<StudentViewCoursesPage />} />
         <Route path="course/details/:id" element={<StudentViewCourseDetailsPage />} />
+        <Route path="payment-return" element={<PaypalPaymentReturnPage />} />
+        <Route path="student-courses" element={<StudentCoursesPage />} />
 
       </Route>
       <Route path="*" element={<NotFoundPage />} />
