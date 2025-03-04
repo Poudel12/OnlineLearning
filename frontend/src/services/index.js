@@ -118,3 +118,11 @@ export async function captureAndFinalizePaymentService(
 
   return data;
 }
+
+export async function fetchStudentBoughtCoursesService(studentId) {
+  const { data } = await axiosInstance.get(
+    `/student/courses-bought/get/${studentId}`
+  );
+
+  return data;
+}
