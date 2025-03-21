@@ -14,6 +14,7 @@ import StudentViewCourseDetailsPage from './pages/student/course-details/index.j
 import  { VideoMeeting } from './video-meeting/roomId/MeetingPage.jsx';
 import PaypalPaymentReturnPage from './pages/student/payment-return/index.jsx';
 import StudentCoursesPage from './pages/student/student-courses/index.jsx';
+import StudentViewCourseProgressPage from './pages/student/course-progress/index.jsx';
 
 function App() {
 
@@ -97,6 +98,10 @@ function App() {
         <Route path="course/details/:id" element={<StudentViewCourseDetailsPage />} />
         <Route path="payment-return" element={<PaypalPaymentReturnPage />} />
         <Route path="student-courses" element={<StudentCoursesPage />} />
+        <Route
+          path="course-progress/:id"
+          element={<StudentViewCourseProgressPage />}
+        />
 
       </Route>
       <Route path="*" element={<NotFoundPage />} />

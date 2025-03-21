@@ -11,8 +11,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { filterOptions, sortOptions } from "@/config";
+import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-contex";
-import { fetchStudentViewCourseListService } from "@/services";
+import { checkCoursePurchaseInfoService, fetchStudentViewCourseListService } from "@/services";
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -38,6 +39,8 @@ function StudentViewCoursesPage() {
   const { studentViewCoursesList, setStudentViewCoursesList, loadingState, setLoadingState } = useContext(StudentContext);
 
   const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
+
 
 
   function handleFilterOnChange(getSectionId, getCurrentOption) {
@@ -69,6 +72,23 @@ function StudentViewCoursesPage() {
     if (response?.success) {
       setStudentViewCoursesList(response?.data);
       setLoadingState(false);
+    }
+  }
+
+  // Check if the course is purchased by the student or not and navigate to respective page
+  async function handleCourseNavigate(getCurrentCourseId) {
+    const response = await checkCoursePurchaseInfoService(
+      getCurrentCourseId,
+      auth?.user?._id
+    );
+
+    console.log(response,"StudentID");
+    if (response?.success) {
+      if (response?.data) {
+        navigate(`/course-progress/${getCurrentCourseId}`);
+      } else {
+        navigate(`/course/details/${getCurrentCourseId}`);
+      }
     }
   }
 
@@ -147,7 +167,8 @@ function StudentViewCoursesPage() {
           <div className="space-y-4">
             {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
               studentViewCoursesList.map((courseItem) => (
-                <Card onClick={() => navigate(`/course/details/${courseItem?._id}`)} 
+                <Card 
+                  onClick={() => handleCourseNavigate(courseItem?._id)} 
                   className="cursor-pointer" 
                   key={courseItem?._id}
                   >
