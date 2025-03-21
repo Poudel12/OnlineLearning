@@ -5,10 +5,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import VideoPlayer from '@/components/video-player';
 import { AuthContext } from '@/context/auth-context';
 import { StudentContext } from '@/context/student-contex';
-import { createPaymentService, fetchStudentViewCourseDetailsService } from '@/services';
+import { checkCoursePurchaseInfoService, createPaymentService, fetchStudentViewCourseDetailsService } from '@/services';
 import { CheckCircle, Globe, Lock, PlayCircle } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 function StudentViewCourseDetailsPage() {
   const {
@@ -28,8 +28,24 @@ function StudentViewCourseDetailsPage() {
   const [approvalUrl, setApprovalUrl] = useState("");
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
 
   async function fetchStudentViewCourseDetails() {
+
+    //redirecting the courseprogress page if someone tries to access the course details page directly that is already bought
+    const checkCoursePurchaseInfoResponse =
+      await checkCoursePurchaseInfoService(
+        currentCourseDetailsId,
+        auth?.user._id
+      );
+
+    if (
+      checkCoursePurchaseInfoResponse?.success &&
+      checkCoursePurchaseInfoResponse?.data
+    ) {
+      navigate(`/course-progress/${currentCourseDetailsId}`);
+      return;
+    }
     const response = await fetchStudentViewCourseDetailsService(currentCourseDetailsId);
     if (response?.success) {
       setStudentViewCourseDetails(response?.data);
