@@ -48,26 +48,31 @@ const getCurrentCourseProgress = async (req, res) => {
            courseId,
         });
 
-            if ( !currentUserCourseProgress || currentUserCourseProgress?.lecturesProgress?.length === 0) {
-              const course = await Course.findById(courseId);
-              if (!course) {
-                return res.status(404).json({
-                  success: false,
-                  message: "Course not found",
-                });
-              }
+        if (
+          !currentUserCourseProgress ||
+          currentUserCourseProgress?.lecturesProgress?.length === 0
+        ) {
+          const course = await Course.findById(courseId);
+          if (!course) {
+            return res.status(404).json({
+              success: false,
+              message: "Course not found",
+            });
+          }
 
-              return res.status(200).json({
-                success: true,
-                message: "No progress found, you can start watching the course",
-                data: {
-                  courseDetails: course,
-                  progress: [],
-                  isPurchased: true,
-                },
-              });
-            }
+          return res.status(200).json({
+            success: true,
+            message: "No progress found, you can start watching the course",
+            data: {
+              courseDetails: course,
+              progress: [],
+              isPurchased: true,
+              
+            },
+          });
+        }
 
+        const courseDetails = await Course.findById(courseId);
 
         res.status(200).json({
           success: true,
