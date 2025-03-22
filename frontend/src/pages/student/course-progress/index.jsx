@@ -3,11 +3,13 @@
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import VideoPlayer from '@/components/video-player';
 import { AuthContext } from '@/context/auth-context';
 import { StudentContext } from '@/context/student-contex';
 import { getCurrentCourseProgressService } from '@/services';
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import React, { useContext, useEffect, useState } from 'react'
+import Confetti from "react-confetti";
 import { useNavigate, useParams } from 'react-router-dom';
 
 
@@ -21,6 +23,7 @@ function StudentViewCourseProgressPage() {
   const [currentLecture, setCurrentLecture] = useState(null);
   const [showCourseCompleteDialog, setShowCourseCompleteDialog] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   const { id } = useParams();
 
 
@@ -46,6 +49,13 @@ function StudentViewCourseProgressPage() {
 
           return;
         }
+
+        if (response?.data?.progress?.length === 0) {
+          setCurrentLecture(response?.data?.courseDetails?.curriculum[0]);
+        }else{
+          //later
+        }
+
       }
     
     }
@@ -55,11 +65,17 @@ function StudentViewCourseProgressPage() {
   useEffect(() => {
     fetchCurrentCourseProgress();
   }, [id]);
+
+  // Show confetti for 15 seconds after course completion
+  useEffect(() => {
+    if (showConfetti) setTimeout(() => setShowConfetti(false), 15000);
+  }, [showConfetti]);
   
 
 
   return (
     <div className="flex flex-col h-screen bg-[#1c1d1f] text-white">
+      {showConfetti && <Confetti />}
       <div className="flex items-center justify-between p-4 bg-[#1c1d1f] border-b border-gray-700">
         <div className="flex items-center space-x-4">
           <Button
@@ -72,9 +88,36 @@ function StudentViewCourseProgressPage() {
             Back to My Courses Page
           </Button>
           <h1 className="text-lg font-bold hidden md:block">
-
+            {studentCurrentCourseProgress?.courseDetails?.title}
           </h1>
         </div>
+        <Button onClick={() => setIsSideBarOpen(!isSideBarOpen)}>
+          {isSideBarOpen ? (
+            <ChevronRight className="h-5 w-5" />
+          ) : (
+            <ChevronLeft className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+      <div className="flex flex-1 overflow-hidden">
+        <div
+          className={`flex-1 ${
+            isSideBarOpen ? "mr-[400px]" : ""
+          } transition-all duration-300`}
+        >
+          <VideoPlayer 
+            width="100%"
+            height="500px"
+            url={currentLecture?.videoUrl}
+          />
+          <div className="p-6 bg-[#1c1d1f]">
+            <h2 className="text-2xl font-bold mb-2">{currentLecture?.title}</h2>
+          </div>
+        </div>
+        <div className= {`fixed top-[64px] right-0 bottom-0 w-[400px] bg-[#1c1d1f] border-l border-gray-700 transition-all duration-300 ${isSideBarOpen ? "translate-x-0" : "translate-x-full"}`}>Course Sidebar</div>
+
+
+
       </div>
       <Dialog open={lockCourse}>
         <DialogContent className="sm:w-[425px]">
