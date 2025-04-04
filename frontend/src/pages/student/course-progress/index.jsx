@@ -1,20 +1,18 @@
-
-
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VideoPlayer from '@/components/video-player';
 import { AuthContext } from '@/context/auth-context';
 import { StudentContext } from '@/context/student-contex';
 import { getCurrentCourseProgressService } from '@/services';
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import React, { useContext, useEffect, useState } from 'react'
+import { Check, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import React, { useContext, useEffect, useState } from 'react';
 import Confetti from "react-confetti";
 import { useNavigate, useParams } from 'react-router-dom';
 
-
 function StudentViewCourseProgressPage() {
-
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
   const { studentCurrentCourseProgress, setStudentCurrentCourseProgress } = useContext(StudentContext);
@@ -26,9 +24,6 @@ function StudentViewCourseProgressPage() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   const { id } = useParams();
 
-
-
-  // Fetch current course progress data from API or database based on the provided course ID.
   async function fetchCurrentCourseProgress() {
     const response = await getCurrentCourseProgressService(auth?.user?._id, id);
     console.log(response,"resp");
@@ -57,21 +52,16 @@ function StudentViewCourseProgressPage() {
         }
 
       }
-    
     }
   }  
-  
 
   useEffect(() => {
     fetchCurrentCourseProgress();
   }, [id]);
 
-  // Show confetti for 15 seconds after course completion
   useEffect(() => {
     if (showConfetti) setTimeout(() => setShowConfetti(false), 15000);
   }, [showConfetti]);
-  
-
 
   return (
     <div className="flex flex-col h-screen bg-[#1c1d1f] text-white">
@@ -80,7 +70,7 @@ function StudentViewCourseProgressPage() {
         <div className="flex items-center space-x-4">
           <Button
             onClick={() => navigate("/student-courses")}
-            className="bg-white text-black border border-gray-300 hover:bg-gray-300"
+            className="bg-white text-black hover:bg-gray-200"
             variant="ghost"
             size="sm"
           >
@@ -100,24 +90,73 @@ function StudentViewCourseProgressPage() {
         </Button>
       </div>
       <div className="flex flex-1 overflow-hidden">
-        <div
-          className={`flex-1 ${
-            isSideBarOpen ? "mr-[400px]" : ""
-          } transition-all duration-300`}
-        >
-          <VideoPlayer 
+        <div className="relative w-full pb-[56.25%]"> {/* Aspect Ratio: 16:9 */}
+          <VideoPlayer
             width="100%"
             height="500px"
             url={currentLecture?.videoUrl}
+            onProgressUpdate={setCurrentLecture}
+            progressData={currentLecture}
           />
           <div className="p-6 bg-[#1c1d1f]">
             <h2 className="text-2xl font-bold mb-2">{currentLecture?.title}</h2>
           </div>
         </div>
-        <div className= {`fixed top-[64px] right-0 bottom-0 w-[400px] bg-[#1c1d1f] border-l border-gray-700 transition-all duration-300 ${isSideBarOpen ? "translate-x-0" : "translate-x-full"}`}>Course Sidebar</div>
-
-
-
+        <div
+          className={`w-[400px] bg-[#1c1d1f] border-l border-gray-700 transition-all duration-300 ${
+            isSideBarOpen ? "block" : "hidden"
+          }`}
+        >
+          <Tabs defaultValue="content" className="h-full flex flex-col">
+            <TabsList className="grid bg-[#1c1d1f] w-full grid-cols-2 p-0 h-14">
+              <TabsTrigger
+                value="content"
+                className="h-full border-white  bg-slate-500 text-white hover:bg-gray-500 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:border-black font-bold"
+              >
+                Course Content
+              </TabsTrigger>
+              <TabsTrigger
+                value="overview"
+                className="h-full border-white bg-slate-500 text-white hover:bg-gray-500 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:border-black font-bold"
+              >
+                Overview
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="content">
+              <ScrollArea className="h-full">
+                <div className="p-4 space-y-4">
+                  {studentCurrentCourseProgress?.courseDetails?.curriculum.map(
+                    (item) => (
+                      <div
+                        className="flex items-center space-x-2 text-sm text-white font-bold cursor-pointer"
+                        key={item._id}
+                      >
+                        {studentCurrentCourseProgress?.progress?.find(
+                          (progressItem) => progressItem.lectureId === item._id
+                        )?.viewed ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Play className="h-4 w-4 " />
+                        )}
+                        <span>{item?.title}</span>
+                      </div>
+                    )
+                  )}
+                </div>
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="overview" className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full">
+                <div className="p-4">
+                  <h2 className="text-xl font-bold mb-4">About this course</h2>
+                  <p className="text-gray-400">
+                    {studentCurrentCourseProgress?.courseDetails?.description}
+                  </p>
+                </div>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
       <Dialog open={lockCourse}>
         <DialogContent className="sm:w-[425px]">
@@ -136,18 +175,15 @@ function StudentViewCourseProgressPage() {
             <DialogDescription className="flex flex-col gap-3">
               <Label>You have completed the course</Label>
               <div className="flex flex-row gap-3">
-                <Button onClick={() => navigate("/student-courses")}>
-                  My Courses Page
-                </Button>
-                <Button >Rewatch Course</Button>
+                <Button onClick={() => navigate("/student-courses")}>My Courses Page</Button>
+                <Button>Rewatch Course</Button>
               </div>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
-
       </Dialog>
     </div>
-  )
+  );
 }
 
-export default StudentViewCourseProgressPage
+export default StudentViewCourseProgressPage;
