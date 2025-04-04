@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog,  DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import VideoPlayer from '@/components/video-player';
 import { AuthContext } from '@/context/auth-context';
@@ -22,6 +22,7 @@ function StudentViewCourseDetailsPage() {
 
   const { auth } = useContext(AuthContext);
 
+  const [openDialog, setOpenDialog] = useState(false);
 
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] = useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
@@ -55,6 +56,15 @@ function StudentViewCourseDetailsPage() {
       setLoadingState(false);
     }
   }
+
+  
+  const handleDialogOpen = () => {
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+  };
 
   // Free preview video
   function handleSetFreePreview(getCurrentVideoInfo) {
@@ -222,8 +232,38 @@ function StudentViewCourseDetailsPage() {
               </div>
               <div className="mb-4">
                 <span className="text-3xl font-bold">${studentViewCourseDetails?.pricing}</span>
+                {/*dialogue for payment option */}
                 <div>
-                  <Button onClick={handleCreatePayment} className="w-full">Buy Now</Button>
+                  <Button onClick={handleDialogOpen} className="w-full">Buy Now</Button>
+
+                  <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                    <DialogContent className="w-[800px] max-w-full">
+                      <DialogHeader>
+                        <DialogTitle>Choose Payment Method</DialogTitle>
+                      </DialogHeader>
+
+                      {/* Payment Method Section */}
+                      <div className="flex flex-col items-center mt-4">
+                        <div className="flex flex-col items-center mb-4">
+                          <img src="/Paypal.png" alt="Paypal" className="w-24 h-24" />
+                          <Button onClick={handleCreatePayment} className="mt-2">Pay with Paypal</Button>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <img src="/KhaltiImg.png" alt="Khalti" className="w-24 h-24" />
+                          <Button className="mt-2">Pay with Khalti</Button>
+                        </div>
+                      </div>
+
+                      {/* Close Button */}
+                      <DialogFooter className="sm:justify-start">
+                        <DialogClose asChild>
+                          <Button type="button" variant="secondary" onClick={handleDialogClose}>
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardContent>
@@ -233,46 +273,46 @@ function StudentViewCourseDetailsPage() {
 
       {/* Dialog for Free Preview */}
       <Dialog open={showFreePreviewDialog} onOpenChange={setShowFreePreviewDialog}>
-  <DialogContent className="w-[800px] max-w-full">
-    <DialogHeader>
-      <DialogTitle>Course Preview</DialogTitle>
-    </DialogHeader>
+        <DialogContent className="w-[800px] max-w-full">
+        <DialogHeader>
+          <DialogTitle>Course Preview</DialogTitle>
+        </DialogHeader>
 
-    {/* Video Player Section */}
-    <div className="aspect-video rounded-lg flex items-center justify-center">
-      <VideoPlayer url={displayCurrentVideoFreePreview} width="450px" height="200px" />
-    </div>
+        {/* Video Player Section */}
+        <div className="aspect-video rounded-lg flex items-center justify-center">
+          <VideoPlayer url={displayCurrentVideoFreePreview} width="450px" height="200px" />
+        </div>
 
-    {/* Choose Demo Video Section */}
-    <div className="flex flex-col gap-2 mt-4">
-      <h3 className="text-lg font-semibold">Choose Demo Video</h3>
-      {studentViewCourseDetails?.curriculum
-        ?.filter((item) => item.freePreview)
-        .map((filteredItem, index) => (
-          <p
-            key={index}
-            onClick={() => handleSetFreePreview(filteredItem)}
-            className={`cursor-pointer text-[16px] transition-all duration-300 ${
-              displayCurrentVideoFreePreview === filteredItem.videoUrl
-                ? "text-black font-extrabold text-lg" // Selected video: Bold, Darker Text
-                : "text-gray-500 font-light hover:text-gray-700" // Other videos: Light font, hover effect
-            }`}
-          >
-            {filteredItem?.title}
-          </p>
-        ))}
-    </div>
+        {/* Choose Demo Video Section */}
+        <div className="flex flex-col gap-2 mt-4">
+          <h3 className="text-lg font-semibold">Choose Demo Video</h3>
+          {studentViewCourseDetails?.curriculum
+            ?.filter((item) => item.freePreview)
+            .map((filteredItem, index) => (
+              <p
+                key={index}
+                onClick={() => handleSetFreePreview(filteredItem)}
+                className={`cursor-pointer text-[16px] transition-all duration-300 ${
+                  displayCurrentVideoFreePreview === filteredItem.videoUrl
+                    ? "text-black font-extrabold text-lg" // Selected video: Bold, Darker Text
+                    : "text-gray-500 font-light hover:text-gray-700" // Other videos: Light font, hover effect
+                }`}
+              >
+                {filteredItem?.title}
+              </p>
+            ))}
+        </div>
 
-    {/* Close Button */}
-    <DialogFooter className="sm:justify-start">
-      <DialogClose asChild>
-        <Button type="button" variant="secondary">
-          Close
-        </Button>
-      </DialogClose>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+        {/* Close Button */}
+          <DialogFooter className="sm:justify-start">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
