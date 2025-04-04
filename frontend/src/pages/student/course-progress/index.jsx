@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VideoPlayer from '@/components/video-player';
 import { AuthContext } from '@/context/auth-context';
 import { StudentContext } from '@/context/student-contex';
-import { getCurrentCourseProgressService } from '@/services';
+import { getCurrentCourseProgressService, markLectureAsViewedService, resetCourseProgressService } from '@/services';
 import { Check, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import React, { useContext, useEffect, useState } from 'react';
 import Confetti from "react-confetti";
@@ -26,7 +26,7 @@ function StudentViewCourseProgressPage() {
 
   async function fetchCurrentCourseProgress() {
     const response = await getCurrentCourseProgressService(auth?.user?._id, id);
-    console.log(response,"resp");
+    console.log(response, "resp");
 
     if (response?.success) {
       if (!response?.data?.isPurchased) {
@@ -37,27 +37,73 @@ function StudentViewCourseProgressPage() {
           progress: response?.data?.progress,
         });
 
+        // Check if the course is completed
         if (response?.data?.completed) {
-          setCurrentLecture(response?.data?.courseDetails?.curriculum[0]);
           setShowCourseCompleteDialog(true);
           setShowConfetti(true);
-
-          return;
+          return; // Do not reset the lecture, just show the completion dialog
         }
 
+        // If no progress has been made, start from the first lecture
         if (response?.data?.progress?.length === 0) {
           setCurrentLecture(response?.data?.courseDetails?.curriculum[0]);
-        }else{
-          //later
-        }
+        } else {
+          console.log("logging here");
+          // Find the last viewed lecture
+          const lastIndexOfViewedAsTrue = response?.data?.progress.reduceRight(
+            (acc, obj, index) => {
+              return acc === -1 && obj.viewed ? index : acc;
+            },
+            -1
+          );
 
+          setCurrentLecture(
+            response?.data?.courseDetails?.curriculum[lastIndexOfViewedAsTrue + 1]
+          );
+        }
       }
     }
-  }  
+}  
+
+// Function to update course progress
+async function updateCourseProgress() {
+    if (currentLecture) {
+      const response = await markLectureAsViewedService(
+        auth?.user?._id,
+        studentCurrentCourseProgress?.courseDetails?._id,
+        currentLecture._id
+      );
+
+      if (response?.success) {
+        fetchCurrentCourseProgress();
+      }
+    }
+}
+
+// Function to handle rewatching the course
+async function handleRewatchCourse() {
+    const response = await resetCourseProgressService(
+      auth?.user?._id,
+      studentCurrentCourseProgress?.courseDetails?._id
+    );
+
+    if (response?.success) {
+      setCurrentLecture(null);
+      setShowConfetti(false);
+      setShowCourseCompleteDialog(false);
+      fetchCurrentCourseProgress();
+    }
+}
+
 
   useEffect(() => {
     fetchCurrentCourseProgress();
   }, [id]);
+
+  useEffect(() => {
+    if (currentLecture?.progressValue === 1) updateCourseProgress();
+  }, [currentLecture]);
+
 
   useEffect(() => {
     if (showConfetti) setTimeout(() => setShowConfetti(false), 15000);
@@ -176,7 +222,7 @@ function StudentViewCourseProgressPage() {
               <Label>You have completed the course</Label>
               <div className="flex flex-row gap-3">
                 <Button onClick={() => navigate("/student-courses")}>My Courses Page</Button>
-                <Button>Rewatch Course</Button>
+                <Button onClick={handleRewatchCourse}>Rewatch Course</Button>
               </div>
             </DialogDescription>
           </DialogHeader>
