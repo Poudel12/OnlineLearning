@@ -103,7 +103,7 @@ const verifyKhalti = async (req, res) => {
     req.transaction_uuid = purchase_order_id;
     req.transaction_id = transaction_id;
 
-    const order = await Order.findOne({ _id: purchase_order_id }); 
+    const order = await Order.findOne({ _id: purchase_order_id });
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -171,14 +171,36 @@ const verifyKhalti = async (req, res) => {
       });
     }
 
-    //  Redirect based on FRONTEND_URL after verification
-    const redirectURL =
-      process.env.FRONTEND_URL?.trim().replace(/\/$/, "") +
-      (status === "Completed" ? "/payment-return" : "/payment-cancel");
-
-    return res.redirect(redirectURL);
+    // Modified redirection logic
+    if (status === "Completed") {
+      return res.send(`
+        <html>
+          <head>
+            <meta http-equiv="refresh" content="3;url=${process.env.FRONTEND_URL?.trim().replace(
+              /\/$/,
+              ""
+            )}/student-courses" />
+          </head>
+          <body>
+            <p>Payment successful! Redirecting to your courses page...</p>
+            <script>
+              setTimeout(() => {
+                window.location.href = "${process.env.FRONTEND_URL?.trim().replace(
+                  /\/$/,
+                  ""
+                )}/student-courses";
+              }, 3000);
+            </script>
+          </body>
+        </html>
+      `);
+    } else {
+      const redirectURL =
+        process.env.FRONTEND_URL?.trim().replace(/\/$/, "") + "/payment-cancel";
+      return res.redirect(redirectURL);
+    }
   } catch (e) {
-    console.error("Khalti Verification Error:", e); // ✅ Corrected variable name
+    console.error("Khalti Verification Error:", e);
     return res.status(500).json({
       success: false,
       message: "An error occurred while verifying the Khalti payment.",

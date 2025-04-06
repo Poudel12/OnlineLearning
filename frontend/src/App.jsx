@@ -15,12 +15,16 @@ import  { VideoMeeting } from './video-meeting/roomId/MeetingPage.jsx';
 import PaypalPaymentReturnPage from './pages/student/payment-return/index.jsx';
 import StudentCoursesPage from './pages/student/student-courses/index.jsx';
 import StudentViewCourseProgressPage from './pages/student/course-progress/index.jsx';
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 function App() {
 
   const {auth} = useContext(AuthContext);
 
   return (
+    <>
     <Routes>
       <Route
         path="/auth"
@@ -108,6 +112,22 @@ function App() {
        {auth.authenticate && <Route path="/class/start-live-class/video-meeting/:roomId" element={<VideoMeeting />}  />}
 
     </Routes>
+ 
+    {/* Toast notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
+
+    </>
   );
 }
 
