@@ -113,6 +113,15 @@ export async function createPaymentService(formData) {
   return data;
 }
 
+export async function initiateKhaltiPaymentService(formData) {
+  const { data } = await axiosInstance.post(
+    `/payment/khalti/initiate`,
+    formData
+  );
+
+  return data;
+}
+
 export async function captureAndFinalizePaymentService(
   paymentId,
   payerId,

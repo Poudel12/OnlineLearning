@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import VideoPlayer from '@/components/video-player';
 import { AuthContext } from '@/context/auth-context';
 import { StudentContext } from '@/context/student-contex';
-import { checkCoursePurchaseInfoService, createPaymentService, fetchStudentViewCourseDetailsService } from '@/services';
+import { checkCoursePurchaseInfoService, createPaymentService, fetchStudentViewCourseDetailsService, initiateKhaltiPaymentService } from '@/services';
 import { CheckCircle, Globe, Lock, PlayCircle } from 'lucide-react';
 import { useContext, useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -103,6 +103,29 @@ function StudentViewCourseDetailsPage() {
        JSON.stringify(response?.data?.orderId)
     );
      setApprovalUrl(response?.data?.approveUrl);
+  }
+ }
+
+ async function   handleKhaltiPayment() {
+  const formData = {
+    amount: studentViewCourseDetails?.pricing,
+    courseTitle: studentViewCourseDetails?.title,
+    userName: auth?.user?.userName,
+    userEmail: auth?.user?.userEmail,
+    userId: auth?.user?._id,
+    courseImage: studentViewCourseDetails?.image,
+    courseId: studentViewCourseDetails?._id,
+    instructorId: studentViewCourseDetails?.instructorId,
+    instructorName: studentViewCourseDetails?.instructorName,
+    
+  };
+
+  const response = await initiateKhaltiPaymentService(formData);
+
+  if (response.success) {
+    window.location.href = response.data.payment_url; // Redirect to Khalti payment page
+  } else {
+    console.error("Error initiating Khalti payment:", response.message);
   }
  }
 
@@ -250,7 +273,10 @@ function StudentViewCourseDetailsPage() {
                         </div>
                         <div className="flex flex-col items-center">
                           <img src="/KhaltiImg.png" alt="Khalti" className="w-24 h-24" />
-                          <Button className="mt-2">Pay with Khalti</Button>
+                          <Button
+                          
+                          onClick={handleKhaltiPayment}
+                          className="mt-2">Pay with Khalti</Button>
                         </div>
                       </div>
 

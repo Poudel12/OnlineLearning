@@ -34,7 +34,7 @@ function StudentCoursesPage() {
             <Card key={course.id} className="flex flex-col">
               <CardContent className="p-4 flex-grow">
                 <img
-                  src={course?.courseImage}
+                  src={course?.image}
                   alt={course?.title}
                   className="w-full aspect-video object-contain rounded-md mb-4"
                 />
@@ -45,7 +45,7 @@ function StudentCoursesPage() {
               </CardContent>
               <CardFooter>
                 <Button
-                  onClick={() => navigate(`/course-progress/${course?.courseId}`)}
+                  onClick={() => navigate(`/course-progress/${course?._id}`)}
                   className="flex-1"
                 >
                   <Watch className="mr-2 h-4 w-4" />

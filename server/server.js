@@ -10,6 +10,7 @@ const studentViewCourseRoutes = require("./routes/student-routes/course-routes")
 const studentViewOrderRoutes = require("./routes/student-routes/order-routes");
 const studentCoursesRoutes = require("./routes/student-routes/student-courses-routes");
 const studentCourseProgressRoutes = require("./routes/student-routes/course-progress-routes");
+const khaltiRoutes=require("./routes/payment-routes/index")
 
 const app = express();
 const PORT = process.env.PORT || 5000; 
@@ -19,7 +20,7 @@ const MONGO_URI = process.env.MONGO_URI;
 // Middleware
 app.use(
     cors({
-        origin : process.env.FRONTEND_URL,
+        origin : "*",
         methods : ["GET", "POST", "DELETE", "PUT"],
         allowedHeaders : ["content-Type", "Authorization"],
     })
@@ -40,6 +41,7 @@ app.use("/student/course", studentViewCourseRoutes);
 app.use("/student/order", studentViewOrderRoutes);
 app.use("/student/courses-bought", studentCoursesRoutes);
 app.use("/student/course-progress", studentCourseProgressRoutes);
+app.use("/payment", khaltiRoutes);
 
 
 app.use((err, req, res,next) => {
