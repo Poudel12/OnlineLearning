@@ -17,6 +17,8 @@ import StudentCoursesPage from './pages/student/student-courses/index.jsx';
 import StudentViewCourseProgressPage from './pages/student/course-progress/index.jsx';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Contact from './pages/student/footer-page/Contact.jsx';
+import Aboutus from './pages/student/footer-page/About-us.jsx';
 
 
 function App() {
@@ -102,6 +104,8 @@ function App() {
         <Route path="course/details/:id" element={<StudentViewCourseDetailsPage />} />
         <Route path="payment-return" element={<PaypalPaymentReturnPage />} />
         <Route path="student-courses" element={<StudentCoursesPage />} />
+        <Route path="contact" element={<Contact />} />
+        <Route path="about" element={<Aboutus />} />
         <Route
           path="course-progress/:id"
           element={<StudentViewCourseProgressPage />}
