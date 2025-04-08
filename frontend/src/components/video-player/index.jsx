@@ -128,15 +128,23 @@ function VideoPlayer({
     <div
       ref={playerContainerRef}
       className={`relative bg-gray-900 rounded-lg overflow-hidden shadow-2xl transition-all duration-300 ease-in-out 
-      ${isFullScreen ? "w-screen h-screen" : ""}
-      `}
+      ${isFullScreen ? "w-screen h-screen" : ""}`}
       style={{ width, height }}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setShowControls(false)}
+      onContextMenu={(e) => e.preventDefault()} // Disable right-click
     >
+      {/* Invisible overlay to block right-click and drag */}
+      <div
+        className="absolute top-0 left-0 w-full h-full z-10"
+        onContextMenu={(e) => e.preventDefault()}
+        onDragStart={(e) => e.preventDefault()}
+      ></div>
+
+     
       <ReactPlayer
         ref={playerRef}
-        className="absolute top-0 left-0"
+        className="absolute top-0 left-0 z-0"
         width="100%"
         height="100%"
         url={url}
@@ -144,12 +152,28 @@ function VideoPlayer({
         volume={volume}
         muted={muted}
         onProgress={handleProgress}
+        config={{
+          file: {
+            attributes: {
+              controlsList: "nodownload",
+              onContextMenu: (e) => e.preventDefault(),
+              draggable: false,
+            },
+          },
+        }}
       />
+
+      {/* Watermark */}
+      <div className="absolute bottom-4 right-4 z-30 text-white text-sm opacity-70 bg-black bg-opacity-40 px-2 py-1 rounded-md pointer-events-none select-none">
+        InfiniteLearn
+      </div>
+
+      {/* Controls */}
       {showControls && (
         <div
           className={`absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-75 p-4 transition-opacity duration-300 ${
             showControls ? "opacity-100" : "opacity-0"
-          }`}
+          } z-20`}
         >
           <Slider
             value={[played * 100]}
@@ -206,7 +230,7 @@ function VideoPlayer({
                 max={100}
                 step={1}
                 onValueChange={(value) => handleVolumeChange([value[0] / 100])}
-                className="w-24 "
+                className="w-24"
               />
             </div>
             <div className="flex items-center space-x-2">
