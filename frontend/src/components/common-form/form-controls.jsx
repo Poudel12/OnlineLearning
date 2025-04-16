@@ -32,6 +32,7 @@ function FormControls({ formControls = [], formData, setFormData }) {
           />
         );
         break;
+
       case "select":
         element = (
           <Select
@@ -44,12 +45,23 @@ function FormControls({ formControls = [], formData, setFormData }) {
             value={currentControlItemValue}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder={getControlItem.label} />
+              <SelectValue
+                placeholder={getControlItem.label}
+                className="text-base font-medium"
+              />
             </SelectTrigger>
             <SelectContent>
               {getControlItem.options && getControlItem.options.length > 0
                 ? getControlItem.options.map((optionItem) => (
-                    <SelectItem key={optionItem.id} value={optionItem.id}>
+                    <SelectItem
+                      key={optionItem.id}
+                      value={optionItem.id}
+                      className={`${
+                        formData[getControlItem.name] === optionItem.id
+                          ? "bg-black text-white font-bold text-lg"
+                          : "text-sm"
+                      }`}
+                    >
                       {optionItem.label}
                     </SelectItem>
                   ))
@@ -58,6 +70,7 @@ function FormControls({ formControls = [], formData, setFormData }) {
           </Select>
         );
         break;
+
       case "textarea":
         element = (
           <Textarea

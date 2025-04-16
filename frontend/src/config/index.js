@@ -1,28 +1,37 @@
 export const signUpFormControls = [
-    {
-        name: 'userName',
-        label : 'User Name',
-        type: 'text',
-        placeholder: 'Enter your user name',
-        componentType: 'input',
-        
-    },
+  {
+    name: "userName",
+    label: "User Name",
+    type: "text",
+    placeholder: "Enter your user name",
+    componentType: "input",
+  },
 
-    {
-        name: 'userEmail',
-        label : 'User Email',
-        type: 'email',
-        placeholder: 'Enter your user email',
-        componentType: 'input'
-    },
+  {
+    name: "userEmail",
+    label: "User Email",
+    type: "email",
+    placeholder: "Enter your user email",
+    componentType: "input",
+  },
 
-    {
-        name: 'password',
-        label : 'User password',
-        type: 'password',
-        placeholder: 'Enter your user password',
-        componentType: 'input'
-    },
+  {
+    name: "password",
+    label: "User password",
+    type: "password",
+    placeholder: "Enter your user password",
+    componentType: "input",
+  },
+
+  {
+    name: "role",
+    label: "Select Role",
+    componentType: "select",
+    options: [
+      { id: "user", label: "Student" },
+      { id: "instructor", label: "Teacher" },
+    ],
+  },
 ];
 
 export const signInFormControls = [

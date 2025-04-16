@@ -1,13 +1,15 @@
 import axiosInstance from "@/api/axiosInstance";
 
 export async function registerService(formData) {
+  // Pass the selected role from formData to the backend
   const { data } = await axiosInstance.post("/auth/register", {
     ...formData,
-    role: "user",
+    role: formData.role || "user", // Default to 'user' if no role is selected
   });
 
   return data;
 }
+
 
 export async function loginService(formData) {
   const { data } = await axiosInstance.post("/auth/login", formData);
