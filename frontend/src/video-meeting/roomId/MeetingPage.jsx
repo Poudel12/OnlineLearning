@@ -167,7 +167,7 @@ export const VideoMeeting = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-gray-200 dark:bg-gray-700">
               <div className="text-center">
                 <img
-                  src="/images/videoQuality.jpg"
+                  src="/HDvideo.png"
                   alt="Feature 1"
                   width={150}
                   height={150}
@@ -178,7 +178,7 @@ export const VideoMeeting = () => {
               </div>
               <div className="text-center">
                 <img
-                  src="/images/screenShare.jpg"
+                  src="/screenshaare.jpeg"
                   alt="Feature 1"
                   width={150}
                   height={150}
@@ -189,7 +189,7 @@ export const VideoMeeting = () => {
               </div>
               <div className="text-center">
                 <img
-                  src="/images/videoSecure.jpg"
+                  src="/securecall.jpeg"
                   alt="Feature 1"
                   width={150}
                   height={150}
