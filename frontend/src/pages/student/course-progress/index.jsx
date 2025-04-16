@@ -24,6 +24,7 @@ function StudentViewCourseProgressPage() {
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   const { id } = useParams();
 
+  // fetch current course progress function
   async function fetchCurrentCourseProgress() {
     const response = await getCurrentCourseProgressService(auth?.user?._id, id);
     console.log(response, "resp");
@@ -63,10 +64,10 @@ function StudentViewCourseProgressPage() {
         }
       }
     }
-}  
+  }
 
-// Function to update course progress
-async function updateCourseProgress() {
+  // update course progress
+  async function updateCourseProgress() {
     if (currentLecture) {
       const response = await markLectureAsViewedService(
         auth?.user?._id,
@@ -78,10 +79,10 @@ async function updateCourseProgress() {
         fetchCurrentCourseProgress();
       }
     }
-}
+  }
 
-// Function to handle rewatching the course
-async function handleRewatchCourse() {
+  // handle rewatch course
+  async function handleRewatchCourse() {
     const response = await resetCourseProgressService(
       auth?.user?._id,
       studentCurrentCourseProgress?.courseDetails?._id
@@ -93,8 +94,7 @@ async function handleRewatchCourse() {
       setShowCourseCompleteDialog(false);
       fetchCurrentCourseProgress();
     }
-}
-
+  }
 
   useEffect(() => {
     fetchCurrentCourseProgress();
@@ -103,7 +103,6 @@ async function handleRewatchCourse() {
   useEffect(() => {
     if (currentLecture?.progressValue === 1) updateCourseProgress();
   }, [currentLecture]);
-
 
   useEffect(() => {
     if (showConfetti) setTimeout(() => setShowConfetti(false), 15000);
@@ -121,7 +120,7 @@ async function handleRewatchCourse() {
             size="sm"
           >
             <ChevronLeft className="h-4 w-4 mr-2" />
-            Back to My Courses Page
+            {/* Back to My Courses Page */}Back to My Courses Page
           </Button>
           <h1 className="text-lg font-bold hidden md:block">
             {studentCurrentCourseProgress?.courseDetails?.title}
@@ -136,7 +135,7 @@ async function handleRewatchCourse() {
         </Button>
       </div>
       <div className="flex flex-1 overflow-hidden">
-        <div className="relative w-full pb-[56.25%]"> {/* Aspect Ratio: 16:9 */}
+        <div className="relative w-full pb-[56.25%]">
           <VideoPlayer
             width="100%"
             height="500px"
@@ -157,7 +156,7 @@ async function handleRewatchCourse() {
             <TabsList className="grid bg-[#1c1d1f] w-full grid-cols-2 p-0 h-14">
               <TabsTrigger
                 value="content"
-                className="h-full border-white  bg-slate-500 text-white hover:bg-gray-500 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:border-black font-bold"
+                className="h-full border-white bg-slate-500 text-white hover:bg-gray-500 data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:border-black font-bold"
               >
                 Course Content
               </TabsTrigger>
@@ -170,24 +169,40 @@ async function handleRewatchCourse() {
             </TabsList>
             <TabsContent value="content">
               <ScrollArea className="h-full">
-                <div className="p-4 space-y-4">
-                  {studentCurrentCourseProgress?.courseDetails?.curriculum.map(
-                    (item) => (
+                <div className="p-4 space-y-2">
+                  {studentCurrentCourseProgress?.courseDetails?.curriculum.map((item) => {
+                    const isViewed = studentCurrentCourseProgress?.progress?.find(
+                      (progressItem) => progressItem.lectureId === item._id
+                    )?.viewed;
+
+                    const isCurrent = currentLecture?._id === item._id;
+
+                    return (
                       <div
-                        className="flex items-center space-x-2 text-sm text-white font-bold cursor-pointer"
                         key={item._id}
+                        onClick={() => setCurrentLecture(item)}
+                        className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                          isCurrent ? 'bg-gray-900' : 'hover:bg-gray-800'
+                        }`}
                       >
-                        {studentCurrentCourseProgress?.progress?.find(
-                          (progressItem) => progressItem.lectureId === item._id
-                        )?.viewed ? (
-                          <Check className="h-4 w-4 text-green-500" />
-                        ) : (
-                          <Play className="h-4 w-4 " />
+                        <div className="flex items-center space-x-2 text-sm font-semibold">
+                          {isViewed ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Play className="h-4 w-4 text-white" />
+                          )}
+                          <span className={`transition-all ${
+                            isCurrent ? 'text-white-300 font-black text-xl' : 'text-white text-sm'
+                          }`}>
+                            {item?.title}
+                          </span>
+                        </div>
+                        {isViewed && (
+                          <span className="text-xs text-green-400 font-semibold">Completed</span>
                         )}
-                        <span>{item?.title}</span>
                       </div>
-                    )
-                  )}
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </TabsContent>
