@@ -43,14 +43,22 @@ function StudentCoursesPage() {
                   {course?.instructorName}
                 </p>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="justify-between">
                 <Button
                   onClick={() => navigate(`/course-progress/${course?._id}`)}
-                  className="flex-1"
+                  
                 >
                   <Watch className="mr-2 h-4 w-4" />
                   Start Watching
                 </Button>
+                {/*join live class */} 
+                <Button
+                 
+                >
+                  <Watch className="mr-2 h-4 w-4" />
+                  Join Class
+                </Button>
+
               </CardFooter>
             </Card>
           )) 

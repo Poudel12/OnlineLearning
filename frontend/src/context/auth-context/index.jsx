@@ -2,6 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { initialSignInFormData, initialSignUpFormData } from "@/config";
 import { checkAuthService, loginService, registerService } from "@/services";
 import { createContext, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export const AuthContext = createContext(null);
 
@@ -25,6 +26,7 @@ export default function AuthProvider({ children }) {
     console.log(data, "datadatadatadatadata");
 
     if (data.success) {
+      toast.success(data?.message);
       sessionStorage.setItem(
         "accessToken",
         JSON.stringify(data.data.accessToken)

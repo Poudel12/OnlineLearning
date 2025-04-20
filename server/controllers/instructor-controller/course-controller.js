@@ -27,7 +27,12 @@ const addNewCourse = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
   try {
-    const coursesList = await Course.find({});
+  
+    const coursesList = await Course.find({
+      instructorId: req.user._id,
+    });
+
+
 
     res.status(200).json({
       success: true,
@@ -101,9 +106,28 @@ const updateCourseByID = async (req, res) => {
   }
 };
 
+
+const getCoursesByInstructor= async (req, res) => {
+  try {
+    console.log(req.user);
+    const coursesList = await Course.find({});
+
+    res.status(200).json({
+      success: true,
+      data: coursesList,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured!",
+    });
+  }
+};
 module.exports = {
   addNewCourse,
   getAllCourses,
   updateCourseByID,
   getCourseDetailsByID,
+  getCoursesByInstructor,
 };

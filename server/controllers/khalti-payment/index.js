@@ -39,7 +39,7 @@ const initiateKhalti = async (req, res) => {
       process.env.BACKEND_URL || "http://localhost:5000"
     }/payment/khalti/verify`,
     website_url: process.env.FRONTEND_URL || "http://localhost:3000",
-    amount: amount * 100,
+    amount: amount * 100 * 150,
     purchase_order_id: newlyCreatedCourseOrder._id,
     purchase_order_name: courseTitle,
     customer_info: {
