@@ -124,6 +124,7 @@ const getCoursesByInstructor= async (req, res) => {
     });
   }
 };
+
 module.exports = {
   addNewCourse,
   getAllCourses,

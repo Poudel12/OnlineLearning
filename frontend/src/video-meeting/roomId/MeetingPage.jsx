@@ -1,15 +1,17 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 import { AuthContext } from '@/context/auth-context';
 import { toast, ToastContainer } from 'react-toastify';
 import { Button } from '@/components/ui/button';
+import { updateCourseByIdService } from '@/services';
 
 export const VideoMeeting = () => {
   const NEXT_PUBLIC_ZEGOAPP_ID = import.meta.env.VITE_NEXT_PUBLIC_ZEGOAPP_ID;
   const NEXT_PUBLIC_ZEGO_SERVER_SECRET = import.meta.env.VITE_NEXT_PUBLIC_ZEGO_SERVER_SECRET;
   const params = useParams();
   const roomID = params.roomId;
+  const courseId = params.courseId;
   const navigation = useNavigate();
   const containerRef = useRef(null);
   const [zp, setZp] = useState(null);
@@ -25,7 +27,7 @@ export const VideoMeeting = () => {
       
       if (!meetingStartTime || meetingStartTime === 'null' || isNaN(Number(meetingStartTime))) {
         meetingStartTime = Date.now().toString();
-        window.history.replaceState({}, '', `${window.location.pathname}?startTime=${meetingStartTime}`);
+        window.history.pushState({}, '', `${window.location.pathname}?startTime=${meetingStartTime}`);
       }
       
       setStartTime(meetingStartTime);
@@ -47,7 +49,7 @@ export const VideoMeeting = () => {
 
   useEffect(() => {
     if (startTime) {
-      const endTime = Number(startTime) + 1 * 60 * 1000; // 1 hour from the first joiner
+      const endTime = Number(startTime) + 1 * 60 * 10000; // 1 hour from the first joiner
       const remainingTime = endTime - Date.now();
       
       if (remainingTime > 0) {
@@ -104,9 +106,25 @@ export const VideoMeeting = () => {
           toast.success('Meeting joined successfully');
           setIsInMeeting(true);
         },
-        onLeaveRoom: () => {
-          endMeeting();
+        onLeaveRoom: async() => {
+          console.log("first")
+        if(auth?.user?.role === 'instructor'){
+          endMeeting()
+          await updateCourseByIdService(
+            courseId,
+            {
+              courseLink: null,
+              isClassActive: false,
+            }
+           
+           )
+
+          }else{
+            endMeeting()
+           }
+
         },
+      
       });
     } catch (error) {
       console.error('Error joining the meeting:', error);
@@ -114,12 +132,11 @@ export const VideoMeeting = () => {
     }
   };
 
-  const endMeeting = (autoEnd = false) => {
+  const endMeeting = async(autoEnd = false) => {
     if (zp) {
       zp.destroy(); 
       setZp(null);
     }
-
     if (autoEnd) {
       toast.warning("The live session ended automatically after 1 hour.");
     } else {
@@ -137,7 +154,7 @@ export const VideoMeeting = () => {
       setTimeout(() => {
         window.location.reload();
       }, 10);
-    }, 1000);
+    }, 10);
   };
 
   return (

@@ -113,11 +113,11 @@ function App() {
 
       </Route>
       <Route path="*" element={<NotFoundPage />} />
-       {auth.authenticate && <Route path="/class/start-live-class/video-meeting/:roomId" element={<VideoMeeting />}  />}
+       {auth.authenticate && <Route path="/class/start-live-class/video-meeting/:roomId/:courseId" element={<VideoMeeting />}  />}
 
     </Routes>
  
-    {/* Toast notifications */}
+    
      
 
     </>

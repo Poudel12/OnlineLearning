@@ -31,6 +31,8 @@ const CourseSchema = new mongoose.Schema({
   ],
   curriculum: [LectureSchema],
   isPublised: Boolean,
+  courseLink: String,
+  isClassActive: Boolean,
 });
 
 // Check if the model is already defined to avoid overwriting

@@ -36,6 +36,7 @@ export default function AuthProvider({ children }) {
         user: data.data.user,
       });
     } else {
+      
       setAuth({
         authenticate: false,
         user: null,

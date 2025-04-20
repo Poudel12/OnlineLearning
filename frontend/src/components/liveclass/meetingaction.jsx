@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { updateCourseByIdService } from "@/services";
 
 function MeetingAction() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,15 +18,27 @@ function MeetingAction() {
   const [meetingLink, setMeetingLink] = useState("");
   const navigate = useNavigate();
   const location = useLocation();  // to detect location changes
-
+  console.log(location?.search.split("=")[1],)
+  
   useEffect(() => {
-    setBaseUrl(window.location.origin);
+    if (typeof window !== "undefined") {
+      setBaseUrl(window.location.origin);
+    }
   }, []);
 
-  const handleCreateMeetingForLater = () => {
+  const handleCreateMeetingForLater = async() => {
     const roomId = uuidv4();
-    const url = `${baseUrl}/class/start-live-class/video-meeting/${roomId}`;
-    setGeneratedMeetingUrl(url);
+    
+    const meetingUrl = `${baseUrl}/class/start-live-class/video-meeting/${roomId}/${location?.search.split("=")[1]}`;
+      await updateCourseByIdService(
+        location?.search.split("=")[1],
+        {
+         courseLink: meetingUrl,
+          isClassActive: true,              
+        }
+        )
+              
+    setGeneratedMeetingUrl(meetingUrl);
     setIsDialogOpen(true);
     toast.success("Meeting link created successfully");
   };
@@ -42,7 +55,7 @@ function MeetingAction() {
     if (meetingLink.includes("http")) {
       try {
         const url = new URL(meetingLink);
-        roomId = url.pathname.split("/").pop();
+        roomId = url.pathname.split("/")[4];
       } catch (error) {
         toast.error("Invalid meeting link format");
         setIsLoading(false);
@@ -58,15 +71,22 @@ function MeetingAction() {
 
     toast.info("Joining meeting...");
     setTimeout(() => {
-      navigate(`/class/start-live-class/video-meeting/${roomId}`);
+      navigate(`/class/start-live-class/video-meeting/${roomId}/${location?.search.split("=")[1]}`);
     }, 1500);
   };
 
-  const handleStartMeeting = () => {
+  const handleStartMeeting = async() => {
     setIsLoading(true);
     const roomId = uuidv4();
-    const meetingUrl = `/class/start-live-class/video-meeting/${roomId}`;
-
+    const meetingUrl = `/class/start-live-class/video-meeting/${roomId}/${location?.search.split("=")[1]}`;
+    await updateCourseByIdService(
+            location?.search.split("=")[1],
+            {
+              courseLink: meetingUrl,
+              isClassActive: true,
+              
+            }
+           )
     // Show the toast first
     toast.info('Joining meeting...');
 

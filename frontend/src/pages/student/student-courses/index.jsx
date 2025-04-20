@@ -53,7 +53,8 @@ function StudentCoursesPage() {
                 </Button>
                 {/*join live class */} 
                 <Button
-                 
+                 onClick={() => navigate(`${course?.courseLink}`)}
+                 disabled={!course.isClassActive}
                 >
                   <Watch className="mr-2 h-4 w-4" />
                   Join Class

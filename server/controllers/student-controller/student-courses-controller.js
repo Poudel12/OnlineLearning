@@ -18,7 +18,7 @@ const getCoursesByStudentId = async (req, res) => {
 
       const studentCourses = await Course.find({
         _id: { $in: courseIds },
-      });
+      })
 
       res.status(200).json({
         success: true,
