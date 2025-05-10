@@ -1,28 +1,43 @@
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import VideoPlayer from '@/components/video-player';
-import { AuthContext } from '@/context/auth-context';
-import { StudentContext } from '@/context/student-contex';
-import { getCurrentCourseProgressService, markLectureAsViewedService, resetCourseProgressService } from '@/services';
-import { Check, ChevronLeft, ChevronRight, Play } from 'lucide-react';
-import React, { useContext, useEffect, useState } from 'react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import VideoPlayer from "@/components/video-player";
+import { AuthContext } from "@/context/auth-context";
+import { StudentContext } from "@/context/student-contex";
+import {
+  getCurrentCourseProgressService,
+  markLectureAsViewedService,
+  resetCourseProgressService,
+  submitFeedbackService,
+} from "@/services";
+import { Check, ChevronLeft, ChevronRight, Play } from "lucide-react";
+import React, { useContext, useEffect, useState } from "react";
 import Confetti from "react-confetti";
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from "react-router-dom";
+import { Textarea } from "@/components/ui/textarea"; // Assuming you have a Textarea component
 
 function StudentViewCourseProgressPage() {
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
-  const { studentCurrentCourseProgress, setStudentCurrentCourseProgress } = useContext(StudentContext);
+  const { studentCurrentCourseProgress, setStudentCurrentCourseProgress } =
+    useContext(StudentContext);
 
   const [lockCourse, setLockCourse] = useState(false);
   const [currentLecture, setCurrentLecture] = useState(null);
-  const [showCourseCompleteDialog, setShowCourseCompleteDialog] = useState(false);
+  const [showCourseCompleteDialog, setShowCourseCompleteDialog] =
+    useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isSideBarOpen, setIsSideBarOpen] = useState(true);
   const { id } = useParams();
+  const [feedback, setFeedback] = useState(""); // State for feedback input
 
   // fetch current course progress function
   async function fetchCurrentCourseProgress() {
@@ -59,7 +74,9 @@ function StudentViewCourseProgressPage() {
           );
 
           setCurrentLecture(
-            response?.data?.courseDetails?.curriculum[lastIndexOfViewedAsTrue + 1]
+            response?.data?.courseDetails?.curriculum[
+              lastIndexOfViewedAsTrue + 1
+            ]
           );
         }
       }
@@ -95,6 +112,34 @@ function StudentViewCourseProgressPage() {
       fetchCurrentCourseProgress();
     }
   }
+
+  // handle feedback submission
+  const handleFeedbackSubmit = async () => {
+    if (!feedback.trim()) {
+      alert("Please write something before submitting.");
+      return;
+    }
+
+    try {
+      // Call the feedback submission service (replace with your actual service)
+      const response = await submitFeedbackService({
+        description: feedback,
+        courseId: studentCurrentCourseProgress?.courseDetails?._id,
+        curriculumId: currentLecture?._id,
+        studentId: auth?.user?._id,
+      });
+
+      if (response?.success) {
+        alert("Feedback submitted successfully!");
+        setFeedback(""); // Clear the feedback box after submission
+      } else {
+        alert("Failed to submit feedback. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      alert("An error occurred while submitting feedback.");
+    }
+  };
 
   useEffect(() => {
     fetchCurrentCourseProgress();
@@ -134,8 +179,8 @@ function StudentViewCourseProgressPage() {
           )}
         </Button>
       </div>
-      <div className="flex flex-1 overflow-hidden">
-        <div className="relative w-full pb-[56.25%]">
+      <div className="flex flex-1">
+        <div className="relative w-full ">
           <VideoPlayer
             width="100%"
             height="500px"
@@ -146,10 +191,30 @@ function StudentViewCourseProgressPage() {
           <div className="p-6 bg-[#1c1d1f]">
             <h2 className="text-2xl font-bold mb-2">{currentLecture?.title}</h2>
           </div>
+          {/* Feedback Form */}
+          <div className="p-6 bg-[#1c1d1f]">
+            <h3 className="text-lg font-bold mb-2">Feedback or Complaint</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              If you have any feedback or complaints, please fill in the box
+              below and submit.
+            </p>
+            <Textarea
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+              placeholder="Write your feedback or complaint here..."
+              className="w-full h-24 p-2 border border-gray-700 rounded-md bg-[#2c2d2f] text-white"
+            />
+            <Button
+              onClick={handleFeedbackSubmit}
+              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Submit Feedback
+            </Button>
+          </div>
         </div>
         <div
           className={`w-[400px] bg-[#1c1d1f] border-l border-gray-700 transition-all duration-300 ${
-            isSideBarOpen ? "block" : "hidden"
+            isSideBarOpen ? "block " : "hidden"
           }`}
         >
           <Tabs defaultValue="content" className="h-full flex flex-col">
@@ -170,39 +235,48 @@ function StudentViewCourseProgressPage() {
             <TabsContent value="content">
               <ScrollArea className="h-full">
                 <div className="p-4 space-y-2">
-                  {studentCurrentCourseProgress?.courseDetails?.curriculum.map((item) => {
-                    const isViewed = studentCurrentCourseProgress?.progress?.find(
-                      (progressItem) => progressItem.lectureId === item._id
-                    )?.viewed;
+                  {studentCurrentCourseProgress?.courseDetails?.curriculum.map(
+                    (item) => {
+                      const isViewed =
+                        studentCurrentCourseProgress?.progress?.find(
+                          (progressItem) => progressItem.lectureId === item._id
+                        )?.viewed;
 
-                    const isCurrent = currentLecture?._id === item._id;
+                      const isCurrent = currentLecture?._id === item._id;
 
-                    return (
-                      <div
-                        key={item._id}
-                        onClick={() => setCurrentLecture(item)}
-                        className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
-                          isCurrent ? 'bg-gray-900' : 'hover:bg-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-center space-x-2 text-sm font-semibold">
-                          {isViewed ? (
-                            <Check className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <Play className="h-4 w-4 text-white" />
+                      return (
+                        <div
+                          key={item._id}
+                          onClick={() => setCurrentLecture(item)}
+                          className={`flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors ${
+                            isCurrent ? "bg-gray-900" : "hover:bg-gray-800"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2 text-sm font-semibold">
+                            {isViewed ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Play className="h-4 w-4 text-white" />
+                            )}
+                            <span
+                              className={`transition-all ${
+                                isCurrent
+                                  ? "text-white-300 font-black text-xl"
+                                  : "text-white text-sm"
+                              }`}
+                            >
+                              {item?.title}
+                            </span>
+                          </div>
+                          {isViewed && (
+                            <span className="text-xs text-green-400 font-semibold">
+                              Completed
+                            </span>
                           )}
-                          <span className={`transition-all ${
-                            isCurrent ? 'text-white-300 font-black text-xl' : 'text-white text-sm'
-                          }`}>
-                            {item?.title}
-                          </span>
                         </div>
-                        {isViewed && (
-                          <span className="text-xs text-green-400 font-semibold">Completed</span>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               </ScrollArea>
             </TabsContent>
@@ -219,6 +293,7 @@ function StudentViewCourseProgressPage() {
           </Tabs>
         </div>
       </div>
+
       <Dialog open={lockCourse}>
         <DialogContent className="sm:w-[425px]">
           <DialogHeader>
@@ -236,7 +311,9 @@ function StudentViewCourseProgressPage() {
             <DialogDescription className="flex flex-col gap-3">
               <Label>You have completed the course</Label>
               <div className="flex flex-row gap-3">
-                <Button onClick={() => navigate("/student-courses")}>My Courses Page</Button>
+                <Button onClick={() => navigate("/student-courses")}>
+                  My Courses Page
+                </Button>
                 <Button onClick={handleRewatchCourse}>Rewatch Course</Button>
               </div>
             </DialogDescription>

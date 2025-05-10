@@ -10,7 +10,6 @@ export async function registerService(formData) {
   return data;
 }
 
-
 export async function loginService(formData) {
   const { data } = await axiosInstance.post("/auth/login", formData);
 
@@ -23,6 +22,27 @@ export async function checkAuthService() {
   return data;
 }
 
+export async function fetchAllUsersService({ role }) {
+  const { data } = await axiosInstance.get(
+    "/admin/getAllUsers" + `?role=${role}`
+  );
+
+  return data;
+}
+
+export async function fetchAllCoursesService({ page, limit }) {
+  const { data } = await axiosInstance.get(
+    `/admin/getAllCourses?page=${page}&limit=${limit}`
+  );
+  return data;
+}
+
+export async function editCourseService({ courseId, curriculumId }) {
+  const { data } = await axiosInstance.get(
+    `/admin/editCourse/${courseId}/curriculum/${curriculumId}`
+  );
+  return data;
+}
 export async function mediaUploadService(formData, onProgressCallback) {
   const { data } = await axiosInstance.post("/media/upload", formData, {
     onUploadProgress: (progressEvent) => {
@@ -41,7 +61,6 @@ export async function mediaDeleteService(id) {
 
   return data;
 }
-
 
 export async function fetchInstructorCourseListService() {
   const { data } = await axiosInstance.get(`/instructor/course/get`);
@@ -85,13 +104,11 @@ export async function mediaBulkUploadService(formData, onProgressCallback) {
   return data;
 }
 
-
 export async function fetchStudentViewCourseListService(query) {
   const { data } = await axiosInstance.get(`/student/course/get?${query}`);
 
   return data;
 }
-
 
 export async function fetchStudentViewCourseDetailsService(courseId) {
   const { data } = await axiosInstance.get(
@@ -146,7 +163,6 @@ export async function fetchStudentBoughtCoursesService(studentId) {
   return data;
 }
 
-
 export async function getCurrentCourseProgressService(userId, courseId) {
   const { data } = await axiosInstance.get(
     `/student/course-progress/get/${userId}/${courseId}`
@@ -179,3 +195,26 @@ export async function resetCourseProgressService(userId, courseId) {
 
   return data;
 }
+
+export const submitFeedbackService = async (feedbackData) => {
+  try {
+    const response = await axiosInstance.post(
+      "/feedback/submit-feedback",
+      feedbackData
+    );
+    return response.data; // Return the response data
+  } catch (error) {
+    console.error("Error submitting feedback:", error);
+    throw error.response?.data || error.message;
+  }
+};
+
+export const getAllFeedbackService = async () => {
+  try {
+    const response = await axiosInstance.get(`/feedback/getAllFeedback`);
+    return response.data; // Return the response data
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    throw error.response?.data || error.message;
+  }
+};

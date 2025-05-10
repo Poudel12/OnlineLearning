@@ -48,8 +48,9 @@ const markCurrentLectureAsViewed = async (req, res) => {
     }
 
     //check all the lectures are viewed or not
-    const allLecturesViewed = progress.lecturesProgress.length === course.curriculum.length &&
-    progress.lecturesProgress.every((item) => item.viewed);
+    const allLecturesViewed =
+      progress.lecturesProgress.length === course.curriculum.length &&
+      progress.lecturesProgress.every((item) => item.viewed);
 
     if (allLecturesViewed) {
       progress.completed = true;
@@ -57,13 +58,12 @@ const markCurrentLectureAsViewed = async (req, res) => {
 
       await progress.save();
     }
-    
-    res.status(200).json({
-     success: true,
-     message: "Lecture marked as viewed",
-     data: progress,
-    });
 
+    res.status(200).json({
+      success: true,
+      message: "Lecture marked as viewed",
+      data: progress,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -71,8 +71,7 @@ const markCurrentLectureAsViewed = async (req, res) => {
       message: "Some error occured!",
     });
   }
-
-}
+};
 
 //get current course progress
 const getCurrentCourseProgress = async (req, res) => {
@@ -108,6 +107,11 @@ const getCurrentCourseProgress = async (req, res) => {
       currentUserCourseProgress?.lecturesProgress?.length === 0
     ) {
       const course = await Course.findById(courseId);
+      // Filter curriculum to include only active items
+      const filteredCurriculum = course.curriculum.filter(
+        (item) => item.isActive
+      );
+
       if (!course) {
         return res.status(404).json({
           success: false,
@@ -119,7 +123,10 @@ const getCurrentCourseProgress = async (req, res) => {
         success: true,
         message: "No progress found, you can start watching the course",
         data: {
-          courseDetails: course,
+          courseDetails: {
+            ...course.toObject(),
+            curriculum: filteredCurriculum,
+          },
           progress: [],
           isPurchased: true,
         },
@@ -127,7 +134,6 @@ const getCurrentCourseProgress = async (req, res) => {
     }
 
     const courseDetails = await Course.findById(courseId);
-
     res.status(200).json({
       success: true,
       data: {
@@ -145,9 +151,7 @@ const getCurrentCourseProgress = async (req, res) => {
       message: "Some error occured!",
     });
   }
-}
-
-
+};
 
 //reset course progress
 const resetCurrentCourseProgress = async (req, res) => {
@@ -155,7 +159,7 @@ const resetCurrentCourseProgress = async (req, res) => {
     const { userId, courseId } = req.body;
 
     const progress = await CourseProgress.findOne({ userId, courseId });
-    
+
     if (!progress) {
       return res.status(404).json({
         success: false,
@@ -174,7 +178,6 @@ const resetCurrentCourseProgress = async (req, res) => {
       message: "Course progress has been reset",
       data: progress,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -182,7 +185,7 @@ const resetCurrentCourseProgress = async (req, res) => {
       message: "Some error occured!",
     });
   }
-}
+};
 
 module.exports = {
   markCurrentLectureAsViewed,
