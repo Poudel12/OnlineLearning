@@ -1,14 +1,23 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { useEffect, useState } from "react";
-import { v4 as uuidv4, validate as isValidUUID } from 'uuid';
+import { v4 as uuidv4, validate as isValidUUID } from "uuid";
 import { Button } from "../ui/button";
 import { Copy, Link2, LinkIcon, Plus, Video } from "lucide-react";
 import { Input } from "../ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { updateCourseByIdService } from "@/services";
+import {
+  fetchInstructorCourseDetailsService,
+  sendClassMail,
+  updateCourseByIdService,
+} from "@/services";
 
 function MeetingAction() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,28 +25,43 @@ function MeetingAction() {
   const [baseUrl, setBaseUrl] = useState("");
   const [generatedMeetingUrl, setGeneratedMeetingUrl] = useState("");
   const [meetingLink, setMeetingLink] = useState("");
+  const [courseData, setCourseData] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();  // to detect location changes
-  console.log(location?.search.split("=")[1],)
-  
+  const location = useLocation(); // to detect location changes
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setBaseUrl(window.location.origin);
     }
-  }, []);
-
-  const handleCreateMeetingForLater = async() => {
+    const data = async () => {
+      const currentClassId = location?.search.split("=")[1];
+      const response = await fetchInstructorCourseDetailsService(
+        currentClassId
+      );
+      if (response?.success) {
+        setCourseData(response?.data);
+      }
+    };
+    data();
+  }, [location?.search.split("=")[1]]);
+  console.log(courseData);
+  const handleCreateMeetingForLater = async () => {
     const roomId = uuidv4();
-    
-    const meetingUrl = `${baseUrl}/class/start-live-class/video-meeting/${roomId}/${location?.search.split("=")[1]}`;
-      await updateCourseByIdService(
-        location?.search.split("=")[1],
-        {
-         courseLink: meetingUrl,
-          isClassActive: true,              
-        }
-        )
-              
+
+    const meetingUrl = `${baseUrl}/class/start-live-class/video-meeting/${roomId}/${
+      location?.search.split("=")[1]
+    }`;
+    await updateCourseByIdService(location?.search.split("=")[1], {
+      courseLink: meetingUrl,
+      isClassActive: true,
+    });
+    await sendClassMail({
+      subject: "Live Class Invitation",
+      text: "Hello students, join the live class now!",
+      html: `<p>Hello students,</p><p>Join the live class now!</p> at localhost:5173${meetingUrl}`,
+      to: courseData?.students.map((student) => student.studentEmail),
+    });
+
     setGeneratedMeetingUrl(meetingUrl);
     setIsDialogOpen(true);
     toast.success("Meeting link created successfully");
@@ -64,44 +88,54 @@ function MeetingAction() {
     }
 
     if (!isValidUUID(roomId)) {
-      toast.error("Invalid meeting ID. Please enter a valid meeting link or code.");
+      toast.error(
+        "Invalid meeting ID. Please enter a valid meeting link or code."
+      );
       setIsLoading(false);
       return;
     }
 
     toast.info("Joining meeting...");
     setTimeout(() => {
-      navigate(`/class/start-live-class/video-meeting/${roomId}/${location?.search.split("=")[1]}`);
+      navigate(
+        `/class/start-live-class/video-meeting/${roomId}/${
+          location?.search.split("=")[1]
+        }`
+      );
     }, 1500);
   };
 
-  const handleStartMeeting = async() => {
+  const handleStartMeeting = async () => {
     setIsLoading(true);
     const roomId = uuidv4();
-    const meetingUrl = `/class/start-live-class/video-meeting/${roomId}/${location?.search.split("=")[1]}`;
-    await updateCourseByIdService(
-            location?.search.split("=")[1],
-            {
-              courseLink: meetingUrl,
-              isClassActive: true,
-              
-            }
-           )
+    const meetingUrl = `/class/start-live-class/video-meeting/${roomId}/${
+      location?.search.split("=")[1]
+    }`;
+    await updateCourseByIdService(location?.search.split("=")[1], {
+      courseLink: meetingUrl,
+      isClassActive: true,
+    });
+    await sendClassMail({
+      subject: "Live Class Invitation",
+      text: "Hello students, join the live class now!",
+      html: `<p>Hello students,</p><p>Join the live class now!</p> at  localhost:5173${meetingUrl}`,
+      to: courseData?.students.map((student) => student.studentEmail),
+    });
     // Show the toast first
-    toast.info('Joining meeting...');
+    toast.info("Joining meeting...");
 
     // Then navigate after a small delay to allow the toast to show up
     setTimeout(() => {
       navigate(meetingUrl);
     }, 500); // 500ms delay to let the toast show before navigating
-  }
+  };
 
   // Show toast when the location changes to a meeting page (successful navigation)
   useEffect(() => {
     if (location.pathname.includes("/class/start-live-class/video-meeting/")) {
       toast.success("Successfully opened meeting page.");
     }
-  }, [location.pathname]);  // Trigger this when the pathname changes
+  }, [location.pathname]); // Trigger this when the pathname changes
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedMeetingUrl);
@@ -151,7 +185,12 @@ function MeetingAction() {
             value={meetingLink}
             onChange={(e) => setMeetingLink(e.target.value)}
           />
-          <Button variant="secondary" className="rounded-l-none" onClick={handleJoinMeeting} disabled={isLoading}>
+          <Button
+            variant="secondary"
+            className="rounded-l-none"
+            onClick={handleJoinMeeting}
+            disabled={isLoading}
+          >
             {isLoading ? "Joining..." : "Join"}
           </Button>
         </div>
@@ -159,17 +198,25 @@ function MeetingAction() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-sm rounded-lg p-6">
           <DialogHeader>
-            <DialogTitle className="text-3xl font-normal">Link For Joining</DialogTitle>
+            <DialogTitle className="text-3xl font-normal">
+              Link For Joining
+            </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col space-y-4">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Infinite Learn is an online platform offering interactive courses, personalized learning, live classes, and mentorship for students worldwide.
+              Infinite Learn is an online platform offering interactive courses,
+              personalized learning, live classes, and mentorship for students
+              worldwide.
             </p>
             <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <span className="text-gray-700 dark:text-gray-200 break-all">
                 {generatedMeetingUrl.slice(0, 30)}...
               </span>
-              <Button variant="ghost" className="hover:bg-gray-200" onClick={copyToClipboard}>
+              <Button
+                variant="ghost"
+                className="hover:bg-gray-200"
+                onClick={copyToClipboard}
+              >
                 <Copy className="w-5 h-5 text-orange-500" />
               </Button>
             </div>

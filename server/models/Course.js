@@ -6,6 +6,8 @@ const LectureSchema = new mongoose.Schema({
   public_id: String,
   freePreview: Boolean,
   isActive: Boolean,
+  documentName: String,
+  documentUrl: String,
 });
 
 const CourseSchema = new mongoose.Schema({

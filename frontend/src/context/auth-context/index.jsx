@@ -17,35 +17,51 @@ export default function AuthProvider({ children }) {
 
   async function handleRegisterUser(event) {
     event.preventDefault();
-    const data = await registerService(signUpFormData);
+    try {
+      const data = await registerService(signUpFormData);
+      if (data.success) {
+        toast.success(data?.message || "Registration successful.");
+      } else {
+        toast.error(data?.message || "Registration failed.");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Registration error.");
+    }
   }
 
   async function handleLoginUser(event) {
     event.preventDefault();
-    const data = await loginService(signInFormData);
-    console.log(data, "datadatadatadatadata");
+    try {
+      const data = await loginService(signInFormData);
+      console.log(data, "datadatadatadatadata");
 
-    if (data.success) {
-      toast.success(data?.message);
-      sessionStorage.setItem(
-        "accessToken",
-        JSON.stringify(data.data.accessToken)
-      );
-      setAuth({
-        authenticate: true,
-        user: data.data.user,
-      });
-    } else {
-      
+      if (data.success) {
+        toast.success(data?.message || "Login successful.");
+        sessionStorage.setItem(
+          "accessToken",
+          JSON.stringify(data.data.accessToken)
+        );
+        setAuth({
+          authenticate: true,
+          user: data.data.user,
+        });
+      } else {
+        setAuth({
+          authenticate: false,
+          user: null,
+        });
+        toast.error(data?.message || "Login failed.");
+      }
+    } catch (error) {
       setAuth({
         authenticate: false,
         user: null,
       });
+      toast.error(error?.response?.data?.message || "Login error.");
     }
   }
-console.log(auth)
-  //check auth user
 
+  //check auth user
   async function checkAuthUser() {
     try {
       const data = await checkAuthService();
@@ -97,7 +113,7 @@ console.log(auth)
         handleRegisterUser,
         handleLoginUser,
         auth,
-       resetCredentials,
+        resetCredentials,
       }}
     >
       {loading ? <Skeleton /> : children}

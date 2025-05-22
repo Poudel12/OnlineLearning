@@ -1,12 +1,17 @@
 const express = require("express");
 const multer = require("multer");
-const {uploadMediaToCloudinary, deleteMediaFromCloudinary,
+const {
+  uploadMediaToCloudinary,
+  deleteMediaFromCloudinary,
+  uploadDocumentToCloudinary,
+  deleteDocumentFromCloudinary,
 } = require("../../helpers/cloudinary");
 
 const router = express.Router();
 
 const upload = multer({ dest: "uploads/" });
 
+// Media upload
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const result = await uploadMediaToCloudinary(req.file.path);
@@ -21,30 +26,31 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+// Media delete
 router.delete("/delete/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        if (!id) {
-        return res.status(400).json({
-            success: false,
-            message: "Assest Id is required",
-        });
-        }
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Assest Id is required",
+      });
+    }
 
-        await deleteMediaFromCloudinary(id);
-        res.status(200).json({
-        success: true,
-        message: "Assest deleted successfully from cloudinary",
-        });
+    await deleteMediaFromCloudinary(id);
+    res.status(200).json({
+      success: true,
+      message: "Assest deleted successfully from cloudinary",
+    });
+  } catch (e) {
+    console.log(e);
 
-    } catch (e) {
-     console.log(e);
-
-     res.status(500).json({ success: false, message: "Error deleting file" });
-   }
+    res.status(500).json({ success: false, message: "Error deleting file" });
+  }
 });
-// bulk upload 
+
+// Bulk media upload
 router.post("/bulk-upload", upload.array("files", 10), async (req, res) => {
   try {
     const uploadPromises = req.files.map((fileItem) =>
@@ -66,5 +72,43 @@ router.post("/bulk-upload", upload.array("files", 10), async (req, res) => {
   }
 });
 
+// Document upload
+router.post("/document/upload", upload.single("file"), async (req, res) => {
+  try {
+    const result = await uploadDocumentToCloudinary(req.file.path);
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (e) {
+    console.log(e);
+    res
+      .status(500)
+      .json({ success: false, message: "Error uploading document" });
+  }
+});
+
+// Document delete
+router.delete("/document/delete/:publicId", async (req, res) => {
+  try {
+    const { publicId } = req.params;
+    if (!publicId) {
+      return res.status(400).json({
+        success: false,
+        message: "Document publicId is required",
+      });
+    }
+    await deleteDocumentFromCloudinary(publicId);
+    res.status(200).json({
+      success: true,
+      message: "Document deleted successfully from cloudinary",
+    });
+  } catch (e) {
+    console.log(e);
+    res
+      .status(500)
+      .json({ success: false, message: "Error deleting document" });
+  }
+});
 
 module.exports = router;

@@ -2,12 +2,16 @@ import { Button } from "@/components/ui/button";
 import { useContext, useEffect } from "react";
 import { courseCategories } from "@/config";
 import { StudentContext } from "@/context/student-contex";
-import { checkCoursePurchaseInfoService, fetchStudentViewCourseListService } from "@/services";
+import {
+  checkCoursePurchaseInfoService,
+  fetchStudentViewCourseListService,
+} from "@/services";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@/context/auth-context";
 
 function StudentHomePage() {
-  const { studentViewCoursesList, setStudentViewCoursesList } = useContext(StudentContext);
+  const { studentViewCoursesList, setStudentViewCoursesList } =
+    useContext(StudentContext);
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
 
@@ -62,7 +66,7 @@ function StudentHomePage() {
         </div>
         <div className="lg:w-full mb-8 lg:mb-0">
           <img
-            src="/bannerimg.jpg" 
+            src="/bannerimg.jpg"
             alt="Banner"
             className="w-full h-auto rounded-lg shadow-lg object-cover"
           />
@@ -74,7 +78,12 @@ function StudentHomePage() {
         <h2 className="text-2xl font-bold mb-6">Course Categories</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {courseCategories.map((categoryItem) => (
-            <Button className="justify-start" variant="outline" key={categoryItem.id}  onClick={() => handleNavigateToCoursesPage(categoryItem.id)}>
+            <Button
+              className="justify-start"
+              variant="outline"
+              key={categoryItem.id}
+              onClick={() => handleNavigateToCoursesPage(categoryItem.id)}
+            >
               {categoryItem.label}
             </Button>
           ))}
@@ -83,33 +92,44 @@ function StudentHomePage() {
 
       {/* Featured Courses */}
       <section className="py-12 px-4 lg:px-8">
-        <h2 className="text-2xl font-bold mb-6">Featured Courses</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Featured Courses</h2>
+          <Button
+            className="px-4 py-2 text-sm font-semibold bg-black text-white hover:bg-white hover:text-black transition-colors duration-200"
+            variant="outline"
+            onClick={() => navigate("/courses")}
+          >
+            View More
+          </Button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
-            studentViewCoursesList.map((courseItem) => (
-              <div
-                onClick={() => handleCourseNavigate(courseItem?._id)}
-                className="border rounded-lg overflow-hidden shadow cursor-pointer"
-                key={courseItem.id}
-              >
-                <img
-                  src={courseItem?.image}
-                  alt={courseItem.title}
-                  className="w-full h-40 object-contain p-2 bg-white"
-                />
-                <div className="p-4">  
-                  <h3 className="font-bold mb-2">{courseItem?.title}</h3>
-                  <p className="text-sm text-gray-700 mb-2">
-                    {courseItem?.instructorName}
-                  </p>
-                  <p className="font-bold text-[16px]">
-                    ${courseItem?.pricing}
-                  </p>
-                
-
+            studentViewCoursesList
+              .slice()
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .slice(0, 4)
+              .map((courseItem) => (
+                <div
+                  onClick={() => handleCourseNavigate(courseItem?._id)}
+                  className="border rounded-lg overflow-hidden shadow cursor-pointer transition-transform duration-200 hover:scale-105 hover:shadow-xl hover:border-blue-500"
+                  key={courseItem.id}
+                >
+                  <img
+                    src={courseItem?.image}
+                    alt={courseItem.title}
+                    className="w-full h-40 object-contain p-2 bg-white"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-bold mb-2">{courseItem?.title}</h3>
+                    <p className="text-sm text-gray-700 mb-2">
+                      {courseItem?.instructorName}
+                    </p>
+                    <p className="font-bold text-[16px]">
+                      ${courseItem?.pricing}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))
+              ))
           ) : (
             <h1>No Courses Found</h1>
           )}

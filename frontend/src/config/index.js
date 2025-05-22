@@ -179,6 +179,11 @@ export const courseCurriculumInitialFormData = [
     videoUrl: "",
     freePreview: false,
     public_id: "",
+    // Added document fields for consistency
+    documentUrl: "",
+    documentName: "",
+    documentType: "",
+    documentPublicId: "",
   },
 ];
 

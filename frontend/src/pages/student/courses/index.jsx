@@ -13,7 +13,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { filterOptions, sortOptions } from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-contex";
-import { checkCoursePurchaseInfoService, fetchStudentViewCourseListService } from "@/services";
+import {
+  checkCoursePurchaseInfoService,
+  fetchStudentViewCourseListService,
+} from "@/services";
 import { ArrowUpDownIcon } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -36,16 +39,23 @@ function StudentViewCoursesPage() {
   const [sort, setSort] = useState("price-lowtohigh");
   const [filters, setFilters] = useState({});
   const [searchParams, setSearchParams] = useSearchParams();
-  const { studentViewCoursesList, setStudentViewCoursesList, loadingState, setLoadingState } = useContext(StudentContext);
+  const {
+    studentViewCoursesList,
+    setStudentViewCoursesList,
+    loadingState,
+    setLoadingState,
+  } = useContext(StudentContext);
 
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
 
-
+  // Search state
+  const [searchTerm, setSearchTerm] = useState("");
 
   function handleFilterOnChange(getSectionId, getCurrentOption) {
     let cpyFilters = { ...filters };
-    const indexOfCurrentSeection = Object.keys(cpyFilters).indexOf(getSectionId);
+    const indexOfCurrentSeection =
+      Object.keys(cpyFilters).indexOf(getSectionId);
 
     if (indexOfCurrentSeection === -1) {
       cpyFilters = {
@@ -53,9 +63,12 @@ function StudentViewCoursesPage() {
         [getSectionId]: [getCurrentOption.id],
       };
     } else {
-      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption.id);
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
+        getCurrentOption.id
+      );
 
-      if (indexOfCurrentOption === -1) cpyFilters[getSectionId].push(getCurrentOption.id);
+      if (indexOfCurrentOption === -1)
+        cpyFilters[getSectionId].push(getCurrentOption.id);
       else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
     }
 
@@ -82,7 +95,7 @@ function StudentViewCoursesPage() {
       auth?.user?._id
     );
 
-    console.log(response,"StudentID");
+    console.log(response, "StudentID");
     if (response?.success) {
       if (response?.data) {
         navigate(`/course-progress/${getCurrentCourseId}`);
@@ -103,7 +116,8 @@ function StudentViewCoursesPage() {
   }, []);
 
   useEffect(() => {
-    if (filters !== null && sort !== null) fetchAllStudentViewCourses(filters, sort);
+    if (filters !== null && sort !== null)
+      fetchAllStudentViewCourses(filters, sort);
   }, [filters, sort]);
 
   useEffect(() => {
@@ -111,6 +125,14 @@ function StudentViewCoursesPage() {
       sessionStorage.removeItem("filters");
     };
   }, []);
+
+  // Filter courses by search term
+  const filteredCourses =
+    studentViewCoursesList && studentViewCoursesList.length > 0
+      ? studentViewCoursesList.filter((course) =>
+          course.title.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : [];
 
   return (
     <div className="container mx-auto p-4">
@@ -123,7 +145,10 @@ function StudentViewCoursesPage() {
                 <h3 className="font-bold mb-3">{keyItem.toUpperCase()}</h3>
                 <div className="grid gap-2 mt-2">
                   {filterOptions[keyItem].map((option) => (
-                    <Label className="flex font-medium items-center gap-3" key={option.id}>
+                    <Label
+                      className="flex font-medium items-center gap-3"
+                      key={option.id}
+                    >
                       <Checkbox
                         checked={
                           filters &&
@@ -131,7 +156,9 @@ function StudentViewCoursesPage() {
                           filters[keyItem] &&
                           filters[keyItem].indexOf(option.id) > -1
                         }
-                        onCheckedChange={() => handleFilterOnChange(keyItem, option)}
+                        onCheckedChange={() =>
+                          handleFilterOnChange(keyItem, option)
+                        }
                       />
                       {option.label}
                     </Label>
@@ -142,36 +169,65 @@ function StudentViewCoursesPage() {
           </div>
         </aside>
         <main className="flex-1">
-          <div className="flex justify-end items-center mb-4 gap-5">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-2 p-5">
-                  <ArrowUpDownIcon className="h-4 w-4" />
-                  <span className="text-[16px] font-medium">Sort By</span>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-5 mb-2">
+            <div className="w-full sm:w-1/2 -mt-4">
+              <div className="flex">
+                <input
+                  type="text"
+                  placeholder="Search courses..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-black rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <Button
+                  className="ml-2 px-6 py-2 rounded-2xl bg-black text-white hover:bg-white hover:text-black border-2 border-black transition-colors duration-200"
+                  tabIndex={-1}
+                >
+                  Search
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[180px]">
-                <DropdownMenuRadioGroup value={sort} onValueChange={(value) => setSort(value)}>
-                  {sortOptions.map((sortItem) => (
-                    <DropdownMenuRadioItem value={sortItem.id} key={sortItem.id}>
-                      {sortItem.label}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <span className="text-sm text-black font-bold">
-              {studentViewCoursesList.length} results
-            </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-5">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 p-5"
+                  >
+                    <ArrowUpDownIcon className="h-4 w-4" />
+                    <span className="text-[16px] font-medium">Sort By</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-[180px]">
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) => setSort(value)}
+                  >
+                    {sortOptions.map((sortItem) => (
+                      <DropdownMenuRadioItem
+                        value={sortItem.id}
+                        key={sortItem.id}
+                      >
+                        {sortItem.label}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <span className="text-sm text-black font-bold">
+                {filteredCourses.length} results
+              </span>
+            </div>
           </div>
           <div className="space-y-4">
-            {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
-              studentViewCoursesList.map((courseItem) => (
-                <Card 
-                  onClick={() => handleCourseNavigate(courseItem?._id)} 
-                  className="cursor-pointer" 
+            {filteredCourses && filteredCourses.length > 0 ? (
+              filteredCourses.map((courseItem) => (
+                <Card
+                  onClick={() => handleCourseNavigate(courseItem?._id)}
+                  className="border rounded-lg overflow-hidden shadow cursor-pointer transition-transform duration-200 hover:scale-105 hover:shadow-xl hover:border-blue-500 flex flex-col"
                   key={courseItem?._id}
-                  >
+                >
                   <CardContent className="flex items-center gap-4 p-4">
                     {/* Image Container */}
                     <div className="w-48 h-32 flex-shrink-0">
@@ -183,16 +239,25 @@ function StudentViewCoursesPage() {
 
                     {/* Text Container */}
                     <div className="flex-1">
-                      <CardTitle className="text-xl mb-2">{courseItem?.title}</CardTitle>
+                      <CardTitle className="text-xl mb-2">
+                        {courseItem?.title}
+                      </CardTitle>
                       <p className="text-sm text-gray-600 mb-1">
-                        Created By <span className="font-bold">{courseItem?.instructorName}</span>
+                        Created By{" "}
+                        <span className="font-bold">
+                          {courseItem?.instructorName}
+                        </span>
                       </p>
                       <p className="text-[16px] text-gray-600 mt-3 mb-2">
                         {`${courseItem?.curriculum?.length} ${
-                          courseItem?.curriculum?.length <= 1 ? "Lecture" : "Lectures"
+                          courseItem?.curriculum?.length <= 1
+                            ? "Lecture"
+                            : "Lectures"
                         } - ${courseItem?.level.toUpperCase()} Level`}
                       </p>
-                      <p className="font-bold text-lg">${courseItem?.pricing}</p>
+                      <p className="font-bold text-lg">
+                        ${courseItem?.pricing}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>

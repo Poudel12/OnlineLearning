@@ -191,6 +191,26 @@ function StudentViewCourseProgressPage() {
           <div className="p-6 bg-[#1c1d1f]">
             <h2 className="text-2xl font-bold mb-2">{currentLecture?.title}</h2>
           </div>
+          {/* Document Section */}
+          <div className="p-6 bg-[#1c1d1f] flex items-center gap-4">
+            <span className="text-white font-semibold">Document:</span>
+            <span className="text-blue-300 font-medium">
+              {currentLecture?.documentName}
+            </span>
+            {currentLecture?.documentUrl && (
+              <Button
+                className="ml-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors font-semibold"
+                onClick={() => {
+                  const googleUrl = `https://docs.google.com/gview?url=${encodeURIComponent(
+                    currentLecture.documentUrl
+                  )}&embedded=true`;
+                  window.open(googleUrl, "_blank");
+                }}
+              >
+                View Document
+              </Button>
+            )}
+          </div>
           {/* Feedback Form */}
           <div className="p-6 bg-[#1c1d1f]">
             <h3 className="text-lg font-bold mb-2">Feedback or Complaint</h3>
@@ -206,7 +226,7 @@ function StudentViewCourseProgressPage() {
             />
             <Button
               onClick={handleFeedbackSubmit}
-              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
+              className="mt-4 bg-white text-black hover:bg-gray-200"
             >
               Submit Feedback
             </Button>

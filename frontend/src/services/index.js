@@ -91,6 +91,13 @@ export async function updateCourseByIdService(id, formData) {
   return data;
 }
 
+export async function sendClassMail(data) {
+  const response = await axiosInstance.post(
+    "/instructor/course/send-mail",
+    data
+  );
+  return response.data;
+}
 export async function mediaBulkUploadService(formData, onProgressCallback) {
   const { data } = await axiosInstance.post("/media/bulk-upload", formData, {
     onUploadProgress: (progressEvent) => {
@@ -218,3 +225,26 @@ export const getAllFeedbackService = async () => {
     throw error.response?.data || error.message;
   }
 };
+
+export async function documentUploadService(formData, onProgressCallback) {
+  const { data } = await axiosInstance.post(
+    "/media/document/upload",
+    formData,
+    {
+      onUploadProgress: (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        if (onProgressCallback) onProgressCallback(percentCompleted);
+      },
+    }
+  );
+  return data;
+}
+
+export async function documentDeleteService(publicId) {
+  const { data } = await axiosInstance.delete(
+    `/media/document/delete/${publicId}`
+  );
+  return data;
+}
