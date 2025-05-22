@@ -233,8 +233,9 @@ function CourseCurriculum() {
             documentPublicId: "",
           })),
         ];
-        cpyCourseCurriculumFormdata;
+        setCourseCurriculumFormData(cpyCourseCurriculumFormdata);
         setMediaUploadProgress(false);
+
       }
     } catch (e) {
       console.log(e);

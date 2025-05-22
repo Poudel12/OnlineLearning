@@ -16,7 +16,13 @@ function AdminCourses() {
         //   courseId,
         //   status: true,
         // });
-        const courses = response?.data?.courses;
+        let courses = response?.data?.courses;
+        // Sort courses by createdAt descending (latest first)
+        if (Array.isArray(courses)) {
+          courses = courses.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+        }
         setCourseData(Array.isArray(courses) ? courses : []);
       } catch (error) {
         console.error("Error fetching courses:", error);
@@ -58,7 +64,7 @@ function AdminCourses() {
             {courseData.map((course, index) => (
               <tr key={course._id} className="hover:bg-gray-50 transition">
                 <td className="px-6 py-4 text-center text-sm text-gray-600">
-                  {index + 1}
+                  {(page - 1) * limit + index + 1}
                 </td>
                 <td
                   className="px-6 py-4 text-sm text-gray-700 font-medium"
@@ -89,6 +95,24 @@ function AdminCourses() {
             ))}
           </tbody>
         </table>
+      </div>
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-6">
+        <button
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span className="text-gray-700">Page {page}</span>
+        <button
+          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          onClick={() => setPage((prev) => prev + 1)}
+          disabled={courseData.length < limit}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

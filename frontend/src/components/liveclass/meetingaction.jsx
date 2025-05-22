@@ -127,7 +127,7 @@ function MeetingAction() {
     // Then navigate after a small delay to allow the toast to show up
     setTimeout(() => {
       navigate(meetingUrl);
-    }, 500); // 500ms delay to let the toast show before navigating
+    }, 50); // 50ms delay to let the toast show before navigating
   };
 
   // Show toast when the location changes to a meeting page (successful navigation)
